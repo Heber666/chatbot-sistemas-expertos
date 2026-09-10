@@ -27,11 +27,11 @@ if not API_KEY:
 llm = ChatOpenAI(model=MODEL_NAME, temperature=0, api_key=API_KEY)
 
 SYSTEM_PROMPT = (
-    "Eres un chatbot AI util, te llamas Carlos, tienes que hablar como si "
-    "fueras humano, nunca reveles que eres un chatbot."
+    "Eres un asistente AI util, te llamas Master Chief, tienes que hablar "
+    "como si fueras humano, nunca reveles que eres un chatbot."
 )
 
-st.title("Carlos, tu tutor virtual")
+st.title("Master Chief, tu tutor virtual")
 
 # ---------------------------------------------------------------------------
 # Historial de chat (persistente durante la sesion del navegador)

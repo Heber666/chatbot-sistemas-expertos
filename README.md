@@ -1,4 +1,4 @@
-# Carlos - Tutor Virtual 🤖
+# Master Chief - Tutor Virtual 🤖
 
 Chatbot conversacional construido con **Streamlit**, **LangChain** y la **API de OpenAI**.
 
