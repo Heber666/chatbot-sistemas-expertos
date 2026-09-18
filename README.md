@@ -2,12 +2,14 @@
 
 Chatbot conversacional construido con **Streamlit**, **LangChain** y la **API de OpenAI**.
 
-> Versión 1.0
+> Versión 2.0
 
 ## Descripción
 
-Aplicación web simple de chat donde "Carlos" responde a las preguntas del usuario
-usando un modelo de OpenAI, manteniendo el historial de la conversación en la sesión.
+Aplicación web simple de chat donde "Master Chief" responde a las preguntas del
+usuario usando un modelo de OpenAI, manteniendo el historial de la conversación
+en la sesión. La v2.0 permite elegir el modelo desde la interfaz y controlar
+cuánto historial se reenvía al modelo en cada turno.
 
 ## Requisitos previos
 
@@ -62,21 +64,31 @@ usando un modelo de OpenAI, manteniendo el historial de la conversación en la s
 Ejecuta la aplicación:
 
 ```bash
-streamlit run chatbot.py
+streamlit run chatbot_v2.py
 ```
 
 Esto abrirá automáticamente el navegador en `http://localhost:8501` con la
-interfaz de chat.
+interfaz de chat. Desde la barra lateral puedes:
+
+- Elegir el modelo de OpenAI a usar (GPT-4o mini o GPT-4o).
+- Ajustar cuántos mensajes recientes se envían como contexto al modelo.
+- Reiniciar la conversación con un clic.
+
+> La versión anterior (`chatbot.py`) se conserva en el repositorio como
+> referencia de la v1.0, pero la versión activa a partir de ahora es
+> `chatbot_v2.py`.
 
 ## Estructura del proyecto
 
 ```
 chatbot-carlos/
-├── chatbot.py        # Código principal de la app
-├── requirements.txt  # Dependencias del proyecto
-├── .env.example       # Plantilla de variables de entorno
+├── chatbot.py         # Versión 1.0 (se conserva como referencia)
+├── chatbot_v2.py      # Versión 2.0 (versión activa)
+├── requirements.txt   # Dependencias del proyecto
+├── .env.example        # Plantilla de variables de entorno
 ├── .gitignore
-└── README.md
+├── README.md
+└── DOCUMENTACION.md   # Bitácora del proceso de desarrollo
 ```
 
 ## Notas de seguridad
@@ -87,10 +99,21 @@ chatbot-carlos/
   pantalla o chat), revócala inmediatamente desde el dashboard de OpenAI y
   genera una nueva.
 
+## Notas de diseño (v2.0)
+
+- El bot ya **no niega ser una inteligencia artificial** cuando se le pregunta
+  directamente: mantiene su nombre y personalidad, pero responde con
+  honestidad ante esa pregunta específica.
+- El historial que se reenvía al modelo está limitado (configurable desde la
+  barra lateral) para evitar que el costo por turno crezca sin control en
+  conversaciones largas.
+
 ## Roadmap / próximas versiones
 
-- [ ] Selección de modelo desde la interfaz
+- [x] Selección de modelo desde la interfaz
+- [x] Límite configurable de historial reenviado al modelo
 - [ ] Manejo de múltiples conversaciones/usuarios
+- [ ] Streaming de la respuesta en tiempo real
 - [ ] Despliegue en Streamlit Community Cloud
 
 ## Licencia
