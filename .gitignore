@@ -13,5 +13,8 @@ __pycache__/
 # Streamlit
 .streamlit/secrets.toml
 
+# Datos persistidos localmente (historial del chat)
+data/
+
 # Sistema
 .DS_Store
