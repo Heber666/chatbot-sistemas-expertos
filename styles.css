@@ -1,0 +1,304 @@
+/*
+Estilos Frutiger Aero para el chatbot Master Chief.
+Este archivo se inyecta en la app via utils.cargar_estilos().
+
+Nota: varios selectores apuntan a atributos internos de Streamlit
+(data-testid, data-baseweb). No son parte de su API publica, asi que
+si actualizas Streamlit y algo se ve raro, este es el primer lugar a
+revisar. Se recomienda usar junto con .streamlit/config.toml (tema
+base "light"), para no pelear contra el modo oscuro del navegador del
+usuario en zonas que este archivo no llega a cubrir.
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap');
+
+:root {
+  color-scheme: light;
+  --accent-blue: #168fc8;
+  --accent-blue-deep: #08719f;
+  --accent-green: #47b86b;
+  --accent-green-deep: #27844b;
+  --ink: #153746;
+  --ink-soft: #496875;
+  --glass-edge: rgba(255, 255, 255, 0.82);
+  --glass-shadow: 0 12px 32px rgba(28, 93, 119, 0.13);
+}
+
+html, body, [class*="css"] {
+  font-family: 'Nunito', sans-serif !important;
+}
+h1, h2, h3, h4 {
+  font-family: 'Quicksand', sans-serif !important;
+}
+
+/* Fondo cielo-a-pasto en el area principal de contenido */
+[data-testid="stAppViewContainer"],
+.stApp {
+  background-color: #dff4fb !important;
+  background-image:
+    radial-gradient(ellipse at 82% 13%, rgba(255, 255, 255, 0.72) 0 5%, transparent 27%),
+    radial-gradient(ellipse at 12% 78%, rgba(119, 202, 117, 0.23), transparent 35%),
+    linear-gradient(180deg, #64b8e8 0%, #b9e4f5 21%, #eaf8fc 43%, #f7fcf8 69%, #e5f3d9 100%) !important;
+  background-attachment: fixed !important;
+}
+
+[data-testid="stMainBlockContainer"] {
+  max-width: 1050px;
+  padding-top: 2.25rem;
+  padding-bottom: 7rem;
+}
+
+/* Barra superior (donde vive el boton "Deploy"): transparente para que
+   se vea el degradado detras, en vez de la franja oscura del tema */
+[data-testid="stHeader"] {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Contenedor fijo inferior que aloja el chat_input: transparente,
+   para que no quede una franja oscura debajo del degradado */
+[data-testid="stBottomBlockContainer"],
+[data-testid="stBottom"] > div {
+  background: transparent !important;
+}
+
+/* Barra lateral como panel de vidrio (Streamlit usa <section>, no <div>,
+   desde versiones mas recientes) */
+section[data-testid="stSidebar"],
+section[data-testid="stSidebar"] > div {
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.76), rgba(224, 246, 250, 0.62)) !important;
+  backdrop-filter: blur(22px) saturate(145%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(145%) !important;
+  border-right: 1px solid var(--glass-edge) !important;
+  box-shadow: 8px 0 28px rgba(24, 88, 111, 0.08);
+}
+
+/* Texto general legible sobre el fondo claro, sin importar el tema
+   que traiga el navegador de quien abra la app */
+[data-testid="stMarkdownContainer"] p,
+[data-testid="stMarkdownContainer"] li,
+label,
+[data-testid="stWidgetLabel"] p,
+h1, h2, h3, h4 {
+  color: var(--ink) !important;
+}
+[data-testid="stCaptionContainer"],
+[data-testid="stCaptionContainer"] p {
+  color: var(--ink-soft) !important;
+}
+[data-testid="stMarkdownContainer"] strong {
+  color: #164e65;
+}
+
+/* Titulo principal */
+h1 {
+  font-size: 2.2rem !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8), 0 5px 18px rgba(35, 112, 144, 0.12);
+}
+
+[data-testid="stCaptionContainer"] {
+  margin-top: -0.35rem;
+}
+
+/* Botones normales y de descarga: pildora glossy con brillo superior */
+.stButton > button,
+.stDownloadButton > button {
+  border-radius: 12px !important;
+  min-height: 2.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.92) !important;
+  background: linear-gradient(180deg, #91e7fa 0%, #35b9e4 48%, #1287c2 100%) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  position: relative;
+  overflow: hidden;
+  text-shadow: 0 1px 2px rgba(5, 76, 119, 0.42);
+  box-shadow: 0 4px 0 rgba(7, 100, 151, 0.55), 0 7px 15px rgba(20, 82, 107, 0.2), inset 0 1px 0 #fff;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+.stDownloadButton > button {
+  background: linear-gradient(180deg, #c4f78b 0%, #82d84d 48%, #39a94b 100%) !important;
+  box-shadow: 0 4px 0 rgba(34, 126, 59, 0.56), 0 7px 15px rgba(39, 132, 75, 0.2), inset 0 1px 0 #fff;
+  text-shadow: 0 1px 2px rgba(35, 104, 46, 0.42);
+}
+.stButton > button::before,
+.stDownloadButton > button::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 6%;
+  right: 6%;
+  height: 42%;
+  border-radius: 999px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0));
+  z-index: 0;
+  pointer-events: none;
+}
+.stButton > button > *,
+.stDownloadButton > button > * {
+  position: relative;
+  z-index: 1;
+}
+.stButton > button:hover,
+.stDownloadButton > button:hover {
+  filter: brightness(1.06) saturate(1.08);
+  box-shadow: 0 5px 0 rgba(7, 100, 151, 0.5), 0 10px 20px rgba(20, 82, 107, 0.24), inset 0 1px 0 #fff;
+  transform: translateY(-2px);
+}
+.stDownloadButton > button:hover {
+  box-shadow: 0 5px 0 rgba(34, 126, 59, 0.52), 0 10px 20px rgba(39, 132, 75, 0.24), inset 0 1px 0 #fff;
+}
+.stButton > button:active,
+.stDownloadButton > button:active {
+  box-shadow: 0 1px 0 rgba(7, 100, 151, 0.5), 0 3px 8px rgba(20, 82, 107, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  transform: translateY(2px);
+}
+.stDownloadButton > button:active {
+  box-shadow: 0 1px 0 rgba(34, 126, 59, 0.52), 0 3px 8px rgba(39, 132, 75, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+.stButton > button:focus-visible,
+.stDownloadButton > button:focus-visible,
+[data-baseweb="select"] > div:focus-within,
+[data-testid="stChatInput"]:focus-within {
+  outline: 3px solid rgba(22, 143, 200, 0.35) !important;
+  outline-offset: 2px;
+}
+
+/* Selectbox: pildora de vidrio */
+[data-baseweb="select"] > div {
+  min-height: 2.8rem;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.78) !important;
+  border: 1px solid var(--glass-edge) !important;
+  box-shadow: inset 0 1px 0 #fff, 0 3px 10px rgba(27, 91, 117, 0.07);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+[data-baseweb="select"] * {
+  color: var(--ink) !important;
+}
+[data-testid="stSelectbox"] [role="group"] {
+  min-height: 2.8rem;
+  border: 1px solid var(--glass-edge) !important;
+  border-radius: 14px !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(218, 243, 250, 0.78)) !important;
+  box-shadow: inset 0 1px 0 #fff, 0 3px 10px rgba(27, 91, 117, 0.07);
+}
+[data-testid="stSelectbox"] [role="group"] input,
+[data-testid="stSelectbox"] [role="group"] button {
+  color: var(--ink) !important;
+  background: transparent !important;
+}
+[data-testid="stSelectbox"] [role="group"] input::placeholder {
+  color: var(--ink-soft) !important;
+}
+
+/* Slider: pulgar tipo esfera de vidrio */
+[data-testid="stSlider"] [role="slider"] {
+  background: radial-gradient(circle at 32% 28%, #ffffff, #cdeeff 40%, #62b6e8 75%, var(--accent-blue) 100%) !important;
+  box-shadow: 0 2px 6px rgba(11, 78, 120, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.9) !important;
+}
+[data-testid="stSlider"] [data-baseweb="slider"] > div:first-child {
+  background: rgba(18, 118, 159, 0.18) !important;
+}
+
+/* Caja de entrada del chat: pildora de vidrio con brillo */
+[data-testid="stChatInput"] {
+  border-radius: 22px !important;
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.88), rgba(228, 247, 251, 0.78)) !important;
+  backdrop-filter: blur(18px) saturate(145%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(145%) !important;
+  border: 1px solid var(--glass-edge) !important;
+  box-shadow: 0 9px 28px rgba(24, 93, 120, 0.16), inset 0 1px 0 #fff !important;
+  transition: box-shadow 160ms ease, border-color 160ms ease;
+}
+[data-testid="stChatInput"] > div {
+  background: transparent !important;
+}
+[data-testid="stChatInput"] textarea {
+  color: var(--ink) !important;
+  caret-color: var(--accent-blue-deep);
+}
+[data-testid="stChatInput"] textarea::placeholder {
+  color: var(--ink-soft) !important;
+}
+[data-testid="stChatInput"] button {
+  color: #ffffff !important;
+  background: radial-gradient(circle at 35% 25%, #9af0ff 0%, #36b9e5 48%, #087eb7 100%) !important;
+  border-radius: 50% !important;
+  box-shadow: 0 3px 8px rgba(8, 104, 150, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.82) !important;
+  transition: background 160ms ease, transform 160ms ease;
+}
+[data-testid="stChatInput"] button:hover {
+  filter: brightness(1.08) saturate(1.08);
+  transform: scale(1.06);
+}
+
+/* Burbujas de mensaje: vidrio esmerilado por defecto */
+[data-testid="stChatMessage"] {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.86), rgba(235, 249, 250, 0.76)) !important;
+  border: 1px solid var(--glass-edge) !important;
+  border-radius: 18px !important;
+  box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(14px) saturate(130%);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  transition: box-shadow 180ms ease, transform 180ms ease;
+}
+[data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] {
+  line-height: 1.68;
+  overflow-wrap: anywhere;
+}
+[data-testid="stChatMessage"] pre {
+  border: 1px solid rgba(74, 143, 161, 0.18);
+  border-radius: 12px;
+}
+[data-testid="stChatMessage"] code {
+  color: #14658a;
+}
+
+/* Distincion de color entre burbuja de usuario y de Master Chief.
+   Usa :has(), soportado en navegadores actuales basados en Chromium;
+   si el navegador no lo soporta, ambas burbujas quedan con el estilo
+   de vidrio por defecto de arriba (no se rompe nada, solo se pierde
+   el matiz de color). */
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
+  background: linear-gradient(145deg, #39a9d5 0%, var(--accent-blue-deep) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.56) !important;
+  box-shadow: 0 9px 24px rgba(9, 102, 148, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.34);
+}
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) p,
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) [data-testid="stMarkdownContainer"] p {
+  color: #ffffff !important;
+}
+
+[data-testid="stSidebar"] hr,
+[data-testid="stMainBlockContainer"] hr {
+  border-color: rgba(48, 126, 151, 0.2) !important;
+}
+
+* {
+  scrollbar-color: rgba(22, 143, 200, 0.48) rgba(255, 255, 255, 0.32);
+}
+
+@media (max-width: 640px) {
+  [data-testid="stMainBlockContainer"] {
+    padding: 1.4rem 1rem 6rem;
+  }
+
+  [data-testid="stChatMessage"] {
+    border-radius: 15px !important;
+    padding: 0.8rem 0.9rem !important;
+  }
+
+  [data-testid="stChatInput"] {
+    border-radius: 18px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

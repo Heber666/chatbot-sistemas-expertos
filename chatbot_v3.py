@@ -6,6 +6,7 @@ Cambios respecto a v2.0:
 - Streaming: la respuesta del modelo se muestra palabra por palabra en tiempo real.
 - Persistencia: el historial se guarda en un archivo local y sobrevive a un refresh
   de la pagina (antes se perdia porque solo vivia en session_state).
+- Estilo visual Frutiger Aero, cargado desde styles.css (ver utils.cargar_estilos).
 """
 
 import os
@@ -16,6 +17,8 @@ import streamlit as st
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
+
+from utils import cargar_estilos
 
 # ---------------------------------------------------------------------------
 # Configuracion inicial
@@ -44,6 +47,7 @@ SYSTEM_PROMPT = (
 )
 
 st.set_page_config(page_title="Master Chief - Tutor Virtual", page_icon="🤖")
+cargar_estilos("styles.css")
 
 # ---------------------------------------------------------------------------
 # Persistencia: guardar/cargar historial en disco
