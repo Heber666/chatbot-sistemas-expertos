@@ -10,6 +10,7 @@ import os
 import json
 import uuid
 import base64
+from html import escape
 from pathlib import Path
 
 import streamlit as st
@@ -747,7 +748,17 @@ nombres_archivos_activos = (
 if nombres_archivos_activos:
     estado_archivos, boton_quitar = st.columns([5, 1])
     with estado_archivos:
-        st.caption("Contexto activo: " + ", ".join(nombres_archivos_activos))
+        archivos_html = "".join(
+            f'<span class="file-context-item">{escape(nombre)}</span>'
+            for nombre in nombres_archivos_activos
+        )
+        st.markdown(
+            '<div class="file-context" role="group" '
+            'aria-label="Archivos de contexto activos">'
+            '<span class="file-context-label">Contexto activo</span>'
+            f"{archivos_html}</div>",
+            unsafe_allow_html=True
+        )
 
     with boton_quitar:
         if st.button("Quitar", key="quitar_contexto_archivos"):

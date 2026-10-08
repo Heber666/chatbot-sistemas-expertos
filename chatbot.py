@@ -1,5 +1,5 @@
 """
-Carlos - Tutor Virtual (Chatbot con Streamlit + LangChain + OpenAI)
+Master Chief - Tutor Virtual (Chatbot con Streamlit + LangChain + OpenAI)
 Version 1.0
 """
 
