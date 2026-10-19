@@ -1,0 +1,36 @@
+# Tema "Cuaderno" de Master Chief.
+# Streamlit carga este archivo automaticamente al ejecutar la app desde la
+# raiz del proyecto. Los detalles que el tema nativo no cubre (sombras,
+# burbujas, portada) estan en styles.css.
+
+[client]
+toolbarMode = "minimal"
+
+[theme]
+base = "light"
+primaryColor = "#C8431D"
+backgroundColor = "#F4EEE2"
+secondaryBackgroundColor = "#EAE1CF"
+textColor = "#1D1A15"
+linkColor = "#C8431D"
+borderColor = "#1D1A15"
+showWidgetBorder = true
+baseRadius = "12px"
+buttonRadius = "12px"
+codeBackgroundColor = "#EFE6D3"
+redColor = "#C2361A"
+orangeColor = "#E0731F"
+yellowColor = "#C9920F"
+greenColor = "#2F7D5B"
+blueColor = "#2D6A8F"
+font = "Bricolage Grotesque:https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400..700&display=swap, sans-serif"
+headingFont = "Fraunces:https://fonts.googleapis.com/css2?family=Fraunces:wght@500..800&display=swap, serif"
+codeFont = "JetBrains Mono:https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap, monospace"
+
+[theme.sidebar]
+primaryColor = "#F2B035"
+backgroundColor = "#16302A"
+secondaryBackgroundColor = "#21443B"
+textColor = "#F3EADB"
+borderColor = "#3A6A5D"
+codeBackgroundColor = "#21443B"

@@ -1,10 +1,19 @@
-# Master Chief - Tutor Virtual 🤖
+# Master Chief - Tutor Virtual
 
 Chatbot conversacional construido con **Streamlit**, **LangChain** y la **API de OpenAI**.
 
-> Versión 5.0
+> Versión final — acceso con Google institucional e interfaz «Cuaderno»
 
-Documentación actualizada el 2026-10-08. Entrada principal: `chatbot_v5.py`.
+La versión final utiliza Streamlit como interfaz única. Incluye acceso con
+Google institucional restringido a `@unab.edu.sv`, almacenamiento separado
+por usuario y una interfaz propia llamada «Cuaderno»: papel crema con
+retícula de puntos, tinta, rojo tomate, mostaza y una barra lateral verde
+pizarra, con tipografías Fraunces, Bricolage Grotesque y JetBrains Mono.
+
+Consulta [`DEPLOYMENT.md`](./DEPLOYMENT.md) para configurar el acceso con
+Google, ejecutar la app y publicar el enlace en Streamlit Community Cloud.
+
+Documentación actualizada el 2026-10-18. Entrada principal: `chatbot_v5.py`.
 
 ## Descripción
 
@@ -243,8 +252,8 @@ ChatbotProject/
 ├── quiz.py            # Quiz estructurado y validación
 ├── tests/test_v5.py   # Pruebas locales aisladas
 ├── utils.py           # Inyección de estilos
-├── styles.css         # Diseño compartido con versiones anteriores
-├── config.toml        # Tema de referencia; Streamlit usa .streamlit/config.toml
+├── styles.css         # Tema «Cuaderno»: sombras, burbujas, portada y chips
+├── .streamlit/config.toml  # Tema nativo: colores, fuentes y barra lateral
 ├── data/              # Datos locales privados, creados durante el uso
 ├── requirements.txt   # Dependencias del proyecto
 ├── .env.example        # Plantilla de variables de entorno
@@ -263,10 +272,12 @@ ChatbotProject/
 - `.gitignore` no elimina archivos ya publicados o rastreados. Si un historial
   está rastreado, usa `git rm --cached data/conversaciones.json` (o la ruta
   correspondiente) antes de publicar. Revisa `git status` y el diff del commit.
-- El tema de `config.toml` es de referencia. Para que Streamlit lo cargue
-  automáticamente debe ubicarse en `.streamlit/config.toml`; la app inyecta
-  además `styles.css`. Las reglas CSS dependen de atributos internos de
-  Streamlit y deben revisarse tras actualizarlo.
+- El tema vive en `.streamlit/config.toml` (colores, fuentes, barra lateral)
+  y Streamlit lo carga automáticamente; `styles.css` añade sombras, burbujas
+  y portada. Las reglas CSS dependen de atributos internos de Streamlit
+  (verificados con 1.66) y deben revisarse tras actualizarlo.
+- Las conversaciones de cada usuario se guardan en `data/usuarios/<id>/`,
+  excluido de Git. Nunca publiques esa carpeta.
 
 ## Notas de diseño (v2.0)
 

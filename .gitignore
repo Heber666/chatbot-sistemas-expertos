@@ -21,3 +21,6 @@ data/contextos/
 data/archivos/
 data/conversaciones.json
 data/historial.json
+
+# Conversaciones, contexto y archivos privados de cada usuario
+data/usuarios/

@@ -1,6 +1,6 @@
 # Python >=3.10. Streamlit 1.63 habilita audio en st.chat_input.
 # Interfaz y configuracion
-streamlit>=1.63.0
+streamlit[auth]>=1.63.0
 python-dotenv>=1.0.1
 
 # OpenAI, mensajes, herramientas y salida estructurada

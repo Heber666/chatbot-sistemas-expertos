@@ -1,341 +1,637 @@
 /*
-Estilos Frutiger Aero para el chatbot Master Chief.
-Este archivo se inyecta en la app via utils.cargar_estilos().
+Master Chief — tema "Cuaderno".
 
-Nota: varios selectores apuntan a atributos internos de Streamlit
-(data-testid, data-baseweb). No son parte de su API publica, asi que
-si actualizas Streamlit y algo se ve raro, este es el primer lugar a
-revisar. Se recomienda usar junto con .streamlit/config.toml (tema
-base "light"), para no pelear contra el modo oscuro del navegador del
-usuario en zonas que este archivo no llega a cubrir.
+Los colores, las fuentes y la barra lateral se definen en
+.streamlit/config.toml. Este archivo agrega solo lo que el tema nativo no
+cubre: textura de papel, sombras solidas, burbujas, portada y chips.
+
+Los selectores [data-testid=...] y .st-key-* dependen de la version de
+Streamlit (verificados con 1.66). Si algo se ve raro tras actualizar
+Streamlit, revisa primero este archivo.
 */
 
-@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap');
-
 :root {
-  color-scheme: light;
-  --accent-blue: #168fc8;
-  --accent-blue-deep: #08719f;
-  --accent-green: #47b86b;
-  --accent-green-deep: #27844b;
-  --ink: #153746;
-  --ink-soft: #496875;
-  --glass-edge: rgba(255, 255, 255, 0.82);
-  --glass-shadow: 0 6px 18px rgba(28, 93, 119, 0.09);
+  --paper: #F4EEE2;
+  --card: #FFFCF5;
+  --ink: #1D1A15;
+  --ink-soft: #655D4F;
+  --tomato: #C8431D;
+  --tomato-bright: #E4572E;
+  --mustard: #F2B035;
+  --pine: #16302A;
+  --pine-2: #21443B;
+  --pine-deep: #0C1D19;
+  --cream: #F3EADB;
+  --cream-soft: #B9C7BC;
+  --coral: #FF9B7F;
+  --shadow: 4px 4px 0 var(--ink);
+  --shadow-sm: 3px 3px 0 var(--ink);
+  --display: "Fraunces", Georgia, serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
-html, body, [class*="css"] {
-  font-family: 'Nunito', sans-serif !important;
-}
-h1, h2, h3, h4 {
-  font-family: 'Quicksand', sans-serif !important;
-}
+/* ---------- Lienzo ---------- */
 
-/* Fondo cielo-a-pasto en el area principal de contenido */
-[data-testid="stAppViewContainer"],
 .stApp {
-  background-color: #dff4fb !important;
-  background-image:
-    radial-gradient(ellipse at 82% 13%, rgba(255, 255, 255, 0.72) 0 5%, transparent 27%),
-    radial-gradient(ellipse at 12% 78%, rgba(119, 202, 117, 0.23), transparent 35%),
-    linear-gradient(180deg, #64b8e8 0%, #b9e4f5 21%, #eaf8fc 43%, #f7fcf8 69%, #e5f3d9 100%) !important;
-  background-attachment: fixed !important;
+  background-color: var(--paper);
+  background-image: radial-gradient(rgba(29, 26, 21, 0.11) 1px, transparent 1.3px);
+  background-size: 22px 22px;
+}
+
+[data-testid="stHeader"] {
+  background: transparent;
 }
 
 [data-testid="stMainBlockContainer"] {
-  max-width: 1050px;
-  padding-top: 2.25rem;
-  padding-bottom: 7rem;
+  max-width: 880px;
+  padding-top: 2.5rem;
+  padding-bottom: 8rem;
 }
 
-/* Barra superior (donde vive el boton "Deploy"): transparente para que
-   se vea el degradado detras, en vez de la franja oscura del tema */
-[data-testid="stHeader"] {
-  background: transparent !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+[data-testid="stBottom"] > div,
+[data-testid="stBottomBlockContainer"] {
+  background: linear-gradient(to bottom, rgba(244, 238, 226, 0), var(--paper) 38%);
 }
 
-/* Contenedor fijo inferior que aloja el chat_input: transparente,
-   para que no quede una franja oscura debajo del degradado */
-[data-testid="stBottomBlockContainer"],
-[data-testid="stBottom"] > div {
-  background: transparent !important;
+::selection {
+  background: var(--mustard);
+  color: var(--ink);
 }
 
-/* Barra lateral como panel de vidrio (Streamlit usa <section>, no <div>,
-   desde versiones mas recientes) */
-section[data-testid="stSidebar"],
-section[data-testid="stSidebar"] > div {
-  background: linear-gradient(155deg, rgba(255, 255, 255, 0.76), rgba(224, 246, 250, 0.62)) !important;
-  backdrop-filter: blur(22px) saturate(145%) !important;
-  -webkit-backdrop-filter: blur(22px) saturate(145%) !important;
-  border-right: 1px solid var(--glass-edge) !important;
-  box-shadow: 8px 0 28px rgba(24, 88, 111, 0.08);
+/* ---------- Botones del area principal ---------- */
+
+[data-testid="stMainBlockContainer"] [data-testid="stBaseButton-secondary"],
+[data-testid="stMainBlockContainer"] [data-testid="stBaseButton-primary"],
+[data-testid="stMainBlockContainer"] [data-testid="stBaseButton-secondaryFormSubmit"],
+[data-testid="stMainBlockContainer"] [data-testid="stBaseButton-primaryFormSubmit"] {
+  border: 2px solid var(--ink);
+  box-shadow: var(--shadow-sm);
+  font-weight: 600;
+  transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+}
+[data-testid="stMainBlockContainer"] [data-testid="stBaseButton-secondary"],
+[data-testid="stMainBlockContainer"] [data-testid="stBaseButton-secondaryFormSubmit"] {
+  background: var(--card);
+  color: var(--ink);
+}
+[data-testid="stMainBlockContainer"] [data-testid="stBaseButton-primary"],
+[data-testid="stMainBlockContainer"] [data-testid="stBaseButton-primaryFormSubmit"] {
+  background: var(--tomato);
+  color: #FFF8EC;
+}
+[data-testid="stMainBlockContainer"] [data-testid^="stBaseButton-"]:not(:disabled):hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--ink);
+  border-color: var(--ink);
+}
+[data-testid="stMainBlockContainer"] [data-testid^="stBaseButton-"]:not(:disabled):active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+[data-testid="stMainBlockContainer"] [data-testid="stBaseButton-primary"]:hover,
+[data-testid="stMainBlockContainer"] [data-testid="stBaseButton-primaryFormSubmit"]:hover {
+  color: #FFF8EC;
 }
 
-/* Texto general legible sobre el fondo claro, sin importar el tema
-   que traiga el navegador de quien abra la app */
-[data-testid="stMarkdownContainer"] p,
-[data-testid="stMarkdownContainer"] li,
-label,
-[data-testid="stWidgetLabel"] p,
-h1, h2, h3, h4 {
-  color: var(--ink) !important;
-}
-[data-testid="stCaptionContainer"],
-[data-testid="stCaptionContainer"] p {
-  color: var(--ink-soft) !important;
-}
-[data-testid="stMarkdownContainer"] strong {
-  color: #164e65;
+/* ---------- Tarjetas: formularios, expansores, quiz ---------- */
+
+[data-testid="stMainBlockContainer"] [data-testid="stForm"],
+[data-testid="stMainBlockContainer"] [data-testid="stExpander"] details {
+  background: var(--card);
+  border: 2px solid var(--ink);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
 }
 
-/* Titulo principal */
-h1 {
-  font-size: 2.2rem !important;
-  font-weight: 700 !important;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8), 0 5px 18px rgba(35, 112, 144, 0.12);
-}
+/* ---------- Mensajes ---------- */
 
-[data-testid="stCaptionContainer"] {
-  margin-top: -0.35rem;
-}
-
-/* Botones normales y de descarga: pildora glossy con brillo superior */
-.stButton > button,
-.stDownloadButton > button {
-  border-radius: 10px !important;
-  min-height: 2.7rem;
-  border: 1px solid rgba(255, 255, 255, 0.82) !important;
-  background: linear-gradient(180deg, #55c6e8 0%, #168fc8 100%) !important;
-  color: #ffffff !important;
-  font-weight: 700 !important;
-  position: relative;
-  overflow: hidden;
-  text-shadow: 0 1px 2px rgba(5, 76, 119, 0.28);
-  box-shadow: 0 2px 7px rgba(20, 82, 107, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
-}
-.stDownloadButton > button {
-  background: linear-gradient(180deg, #72ce83 0%, #39a94b 100%) !important;
-  box-shadow: 0 2px 7px rgba(39, 132, 75, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  text-shadow: 0 1px 2px rgba(35, 104, 46, 0.28);
-}
-.stButton > button > *,
-.stDownloadButton > button > * {
-  position: relative;
-  z-index: 1;
-}
-.stButton > button:hover,
-.stDownloadButton > button:hover {
-  filter: brightness(1.04);
-  box-shadow: 0 4px 10px rgba(20, 82, 107, 0.18);
-  transform: translateY(-1px);
-}
-.stDownloadButton > button:hover {
-  box-shadow: 0 4px 10px rgba(39, 132, 75, 0.2);
-}
-.stButton > button:active,
-.stDownloadButton > button:active {
-  box-shadow: 0 1px 3px rgba(20, 82, 107, 0.16);
-  transform: translateY(0);
-}
-.stDownloadButton > button:active {
-  box-shadow: 0 1px 3px rgba(39, 132, 75, 0.18);
-}
-[data-testid="stSidebar"] [data-testid="stBaseButton-secondary"] {
-  background: rgba(255, 255, 255, 0.52) !important;
-  border-color: rgba(255, 255, 255, 0.72) !important;
-  box-shadow: none !important;
-  color: var(--ink) !important;
-  text-shadow: none !important;
-}
-[data-testid="stSidebar"] [data-testid="stBaseButton-secondary"]:hover {
-  background: rgba(255, 255, 255, 0.82) !important;
-  box-shadow: 0 2px 7px rgba(24, 88, 111, 0.1) !important;
-}
-[data-testid="stSidebar"] [data-testid="stBaseButton-primary"] {
-  background: linear-gradient(180deg, #72ce83 0%, #39a94b 100%) !important;
-  border-color: rgba(255, 255, 255, 0.95) !important;
-  box-shadow: 0 2px 7px rgba(39, 132, 75, 0.18) !important;
-  color: #ffffff !important;
-  text-shadow: 0 1px 2px rgba(35, 104, 46, 0.28) !important;
-}
-[data-testid="stSidebar"] [data-testid="stBaseButton-tertiary"] {
-  min-height: 2.7rem;
-  padding: 0 !important;
-  background: rgba(255, 255, 255, 0.58) !important;
-  border: 1px solid rgba(255, 255, 255, 0.76) !important;
-  box-shadow: none !important;
-  color: #a33b37 !important;
-  text-shadow: none !important;
-}
-.stButton > button:focus-visible,
-.stDownloadButton > button:focus-visible,
-[data-baseweb="select"] > div:focus-within,
-[data-testid="stChatInput"]:focus-within {
-  outline: 3px solid rgba(22, 143, 200, 0.35) !important;
-  outline-offset: 2px;
-}
-
-/* Selectbox: pildora de vidrio */
-[data-baseweb="select"] > div {
-  min-height: 2.8rem;
-  border-radius: 14px !important;
-  background: rgba(255, 255, 255, 0.78) !important;
-  border: 1px solid var(--glass-edge) !important;
-  box-shadow: inset 0 1px 0 #fff, 0 3px 10px rgba(27, 91, 117, 0.07);
-  transition: border-color 160ms ease, box-shadow 160ms ease;
-}
-[data-baseweb="select"] * {
-  color: var(--ink) !important;
-}
-[data-testid="stSelectbox"] [role="group"] {
-  min-height: 2.8rem;
-  border: 1px solid var(--glass-edge) !important;
-  border-radius: 14px !important;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(218, 243, 250, 0.78)) !important;
-  box-shadow: inset 0 1px 0 #fff, 0 3px 10px rgba(27, 91, 117, 0.07);
-}
-[data-testid="stSelectbox"] [role="group"] input,
-[data-testid="stSelectbox"] [role="group"] button {
-  color: var(--ink) !important;
-  background: transparent !important;
-}
-[data-testid="stSelectbox"] [role="group"] input::placeholder {
-  color: var(--ink-soft) !important;
-}
-
-/* Slider: pulgar tipo esfera de vidrio */
-[data-testid="stSlider"] [role="slider"] {
-  background: radial-gradient(circle at 32% 28%, #ffffff, #cdeeff 40%, #62b6e8 75%, var(--accent-blue) 100%) !important;
-  box-shadow: 0 2px 6px rgba(11, 78, 120, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.9) !important;
-}
-[data-testid="stSlider"] [data-baseweb="slider"] > div:first-child {
-  background: rgba(18, 118, 159, 0.18) !important;
-}
-
-/* Caja de entrada del chat: pildora de vidrio con brillo */
-[data-testid="stChatInput"] {
-  border-radius: 15px !important;
-  background: rgba(255, 255, 255, 0.94) !important;
-  backdrop-filter: blur(10px) !important;
-  -webkit-backdrop-filter: blur(10px) !important;
-  border: 1px solid var(--glass-edge) !important;
-  box-shadow: 0 4px 14px rgba(24, 93, 120, 0.12) !important;
-  transition: box-shadow 160ms ease, border-color 160ms ease;
-}
-[data-testid="stChatInput"] > div {
-  background: transparent !important;
-}
-[data-testid="stChatInput"] textarea {
-  color: var(--ink) !important;
-  caret-color: var(--accent-blue-deep);
-}
-[data-testid="stChatInput"] textarea::placeholder {
-  color: var(--ink-soft) !important;
-}
-[data-testid="stChatInput"] button {
-  color: #ffffff !important;
-  background: radial-gradient(circle at 35% 25%, #9af0ff 0%, #36b9e5 48%, #087eb7 100%) !important;
-  border-radius: 50% !important;
-  box-shadow: 0 3px 8px rgba(8, 104, 150, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.82) !important;
-  transition: background 160ms ease, transform 160ms ease;
-}
-[data-testid="stChatInput"] button:hover {
-  filter: brightness(1.08) saturate(1.08);
-  transform: scale(1.06);
-}
-
-/* Burbujas de mensaje: vidrio esmerilado por defecto */
 [data-testid="stChatMessage"] {
-  background: rgba(255, 255, 255, 0.9) !important;
-  border: 1px solid rgba(255, 255, 255, 0.92) !important;
-  border-radius: 14px !important;
-  box-shadow: var(--glass-shadow);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  padding: 1rem 1.15rem;
+  margin-bottom: 0.9rem;
+  background: var(--card);
+  border: 2px solid var(--ink);
+  border-radius: 18px 18px 18px 4px;
+  box-shadow: var(--shadow);
 }
 [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] {
-  line-height: 1.68;
+  line-height: 1.7;
   overflow-wrap: anywhere;
 }
-[data-testid="stChatMessage"] pre {
-  border: 1px solid rgba(74, 143, 161, 0.18);
-  border-radius: 12px;
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
+  margin-left: 12%;
+  background: var(--ink);
+  border-radius: 18px 18px 4px 18px;
+  box-shadow: 4px 4px 0 var(--tomato);
 }
-[data-testid="stChatMessage"] code {
-  color: #14658a;
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) [data-testid="stMarkdownContainer"],
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) [data-testid="stMarkdownContainer"] * {
+  color: #FBF5EA;
+}
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) code {
+  background: #3A352C;
+  color: var(--mustard);
 }
 
-/* Distincion de color entre burbuja de usuario y de Master Chief.
-   Usa :has(), soportado en navegadores actuales basados en Chromium;
-   si el navegador no lo soporta, ambas burbujas quedan con el estilo
-   de vidrio por defecto de arriba (no se rompe nada, solo se pierde
-   el matiz de color). */
-[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
-  background: #168fc8 !important;
-  border-color: rgba(255, 255, 255, 0.56) !important;
-  box-shadow: 0 4px 12px rgba(9, 102, 148, 0.14);
+[data-testid="stChatMessageAvatarAssistant"],
+[data-testid="stChatMessageAvatarUser"] {
+  border: 2px solid var(--ink);
+  border-radius: 10px;
 }
-[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) p,
-[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) [data-testid="stMarkdownContainer"] p {
-  color: #ffffff !important;
+[data-testid="stChatMessageAvatarAssistant"] {
+  background: var(--mustard);
+  color: var(--ink);
 }
+[data-testid="stChatMessageAvatarUser"] {
+  background: var(--tomato);
+  color: #FFF8EC;
+  border-color: var(--cream);
+}
+
+/* ---------- Caja de entrada del chat ---------- */
+
+[data-testid="stChatInput"] {
+  background: var(--card);
+  border: 2px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+[data-testid="stChatInput"]:focus-within {
+  box-shadow: 4px 4px 0 var(--tomato);
+}
+[data-testid="stChatInput"] div {
+  background-color: transparent;
+}
+[data-testid="stChatInputSubmitButton"] {
+  background: var(--tomato);
+  color: #FFF8EC;
+  border-radius: 10px;
+}
+[data-testid="stChatInputSubmitButton"]:disabled {
+  background: transparent;
+  color: var(--ink-soft);
+}
+
+/* ---------- Encabezado del chat ---------- */
+
+.mc-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+.mc-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.mc-brand-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: var(--mustard);
+  box-shadow: 2px 2px 0 var(--ink);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.mc-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.mc-chip {
+  padding: 0.22rem 0.65rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.mc-chip--accent {
+  background: var(--tomato);
+  border-color: var(--tomato);
+  color: #FFF8EC;
+}
+.mc-chat-title {
+  margin: 0 0 1.5rem;
+  padding: 0;
+  font-family: var(--display);
+  font-size: clamp(1.6rem, 3.4vw, 2.3rem);
+  line-height: 1.15;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Estado vacio y sugerencias ---------- */
+
+.mc-hero {
+  margin: 1.5rem 0 1.75rem;
+}
+.mc-kicker {
+  display: inline-block;
+  margin: 0 0 1rem;
+  padding: 0.25rem 0.6rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 6px;
+  background: var(--mustard);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: rotate(-1.5deg);
+}
+.mc-hero-title {
+  margin: 0 0 0.9rem;
+  padding: 0;
+  font-family: var(--display);
+  font-size: clamp(2.3rem, 6vw, 3.6rem);
+  font-weight: 750;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.mc-hero-title .mc-dot,
+.mc-login-title .mc-dot {
+  color: var(--tomato);
+}
+.mc-hero-title mark,
+.mc-login-title mark {
+  padding: 0 0.12em;
+  color: inherit;
+  background: linear-gradient(to bottom, transparent 58%, var(--mustard) 58%, var(--mustard) 92%, transparent 92%);
+}
+.mc-hero-lead {
+  max-width: 34rem;
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+.mc-section-label {
+  margin: 0 0 0.6rem;
+  color: var(--ink-soft);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.st-key-sugerencias [data-testid="stBaseButton-secondary"] {
+  justify-content: flex-start;
+  min-height: 4.2rem;
+  padding: 0.8rem 1rem;
+  text-align: left;
+  white-space: normal;
+}
+.st-key-sugerencias [data-testid="stBaseButton-secondary"] p {
+  text-align: left;
+  font-weight: 500;
+  line-height: 1.35;
+}
+.st-key-sugerencias [data-testid="stBaseButton-secondary"] * {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+/* Streamlit agrega un enlace de ancla a los titulos; aqui son decorativos. */
+.mc-hero-title a,
+.mc-chat-title a,
+.mc-login-title a,
+.mc-hero-title [data-testid="stHeaderActionElements"],
+.mc-chat-title [data-testid="stHeaderActionElements"],
+.mc-login-title [data-testid="stHeaderActionElements"] {
+  display: none;
+}
+
+/* ---------- Archivos activos ---------- */
 
 .file-context {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.55rem 0.7rem;
-  border: 1px solid rgba(48, 126, 151, 0.16);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.72);
 }
 .file-context-label {
-  margin-right: 0.2rem;
+  margin-right: 0.25rem;
   color: var(--ink-soft);
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 .file-context-item {
   max-width: 100%;
-  padding: 0.18rem 0.5rem;
+  padding: 0.2rem 0.55rem;
   overflow-wrap: anywhere;
-  border: 1px solid rgba(22, 143, 200, 0.18);
-  border-radius: 7px;
-  background: rgba(219, 243, 250, 0.8);
+  border: 1.5px solid var(--ink);
+  border-radius: 8px;
+  background: var(--mustard);
   color: var(--ink);
   font-size: 0.82rem;
+  font-weight: 600;
 }
 
-[data-testid="stSidebar"] hr,
-[data-testid="stMainBlockContainer"] hr {
-  border-color: rgba(48, 126, 151, 0.2) !important;
+/* ---------- Barra lateral (pizarra) ---------- */
+
+[data-testid="stSidebar"] {
+  border-right: 2px solid var(--ink);
+}
+.mc-side-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0 0 1rem;
+  font-family: var(--display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--cream);
+}
+.mc-side-brand .mc-brand-mark {
+  border-color: var(--cream);
+  box-shadow: 2px 2px 0 var(--pine-deep);
+  color: var(--ink);
+}
+.mc-user {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.65rem;
+  border: 1.5px solid #3A6A5D;
+  border-radius: 12px;
+  background: var(--pine-2);
+}
+.mc-user-avatar {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--tomato-bright);
+  color: var(--ink);
+  font-weight: 700;
+}
+.mc-user-text {
+  min-width: 0;
+  line-height: 1.25;
+}
+.mc-user-name {
+  display: block;
+  color: var(--cream);
+  font-weight: 600;
+}
+.mc-user-email {
+  display: block;
+  overflow: hidden;
+  color: var(--cream-soft);
+  font-size: 0.78rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mc-side-label {
+  margin: 0.4rem 0 0.35rem;
+  color: var(--cream-soft);
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.mc-side-note {
+  color: var(--cream-soft);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+[data-testid="stSidebar"] [data-testid="stBaseButton-secondary"] {
+  border-color: transparent;
+  background: transparent;
+  color: var(--cream);
+}
+[data-testid="stSidebar"] [data-testid="stBaseButton-secondary"]:hover {
+  border-color: #3A6A5D;
+  background: var(--pine-2);
+  color: var(--cream);
+}
+[data-testid="stSidebar"] [data-testid="stBaseButton-primary"] {
+  border: 2px solid var(--pine-deep);
+  background: var(--mustard);
+  color: var(--ink);
+  box-shadow: 3px 3px 0 var(--pine-deep);
+  font-weight: 700;
+}
+[data-testid="stSidebar"] [data-testid="stBaseButton-primary"]:hover {
+  border-color: var(--pine-deep);
+  background: #F6C25C;
+  color: var(--ink);
+}
+[data-testid="stSidebar"] [data-testid="stBaseButton-primary"] p,
+[data-testid="stSidebar"] [data-testid="stBaseButton-primary"] span {
+  color: var(--ink);
+}
+[data-testid="stSidebar"] [data-testid="stBaseButton-tertiary"] {
+  color: var(--coral);
+}
+[data-testid="stSidebar"] [data-testid="stBaseButton-tertiary"]:hover {
+  color: #FFC2B0;
+}
+
+[class*="st-key-fila_chat_"] [data-testid="stBaseButton-secondary"],
+[class*="st-key-fila_chat_"] [data-testid="stBaseButton-primary"] {
+  justify-content: flex-start;
+  text-align: left;
+}
+[class*="st-key-fila_chat_"] [data-testid^="stBaseButton-"] > div,
+[class*="st-key-fila_chat_"] [data-testid^="stBaseButton-"] > div > span,
+.st-key-sugerencias [data-testid="stBaseButton-secondary"] > div,
+.st-key-sugerencias [data-testid="stBaseButton-secondary"] > div > span {
+  justify-content: flex-start;
+}
+[class*="st-key-fila_chat_"] [data-testid="stBaseButton-secondary"] p,
+[class*="st-key-fila_chat_"] [data-testid="stBaseButton-primary"] p {
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.st-key-nueva_conversacion [data-testid="stBaseButton-secondary"] {
+  border: 1.5px dashed var(--cream-soft);
+  color: var(--cream);
+}
+.st-key-nueva_conversacion [data-testid="stBaseButton-secondary"]:hover {
+  border-style: solid;
+  border-color: var(--mustard);
+  color: var(--mustard);
+}
+.st-key-cerrar_sesion [data-testid="stBaseButton-tertiary"] {
+  color: var(--cream-soft);
+}
+
+/* ---------- Portada de acceso ---------- */
+
+.mc-login {
+  margin: 3rem 0 1.5rem;
+}
+.mc-stickers {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.4rem;
+}
+.mc-sticker {
+  padding: 0.3rem 0.7rem;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  box-shadow: 2px 2px 0 var(--ink);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.mc-sticker--mustard {
+  background: var(--mustard);
+  color: var(--ink);
+  transform: rotate(-2deg);
+}
+.mc-sticker--tomato {
+  background: var(--tomato);
+  color: #FFF8EC;
+  transform: rotate(1.5deg);
+}
+.mc-login-title {
+  margin: 0 0 1rem;
+  padding: 0;
+  font-family: var(--display);
+  font-size: clamp(2.6rem, 7vw, 4.2rem);
+  font-weight: 750;
+  line-height: 1;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+}
+.mc-login-lead {
+  max-width: 36rem;
+  margin: 0 0 1.75rem;
+  color: var(--ink-soft);
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+.mc-features {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mc-features li {
+  margin: 0;
+  padding: 0.85rem 0.9rem;
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+}
+.mc-features li:nth-child(2) { background: #F9E3B2; }
+.mc-features li:nth-child(3) { background: #F6D3C6; }
+.mc-features li:nth-child(4) { background: #D7E6DA; }
+.mc-features b {
+  display: block;
+  margin-bottom: 0.15rem;
+  font-family: var(--display);
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+.mc-features span {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  line-height: 1.35;
+}
+.st-key-acceso_google {
+  max-width: 22rem;
+}
+.st-key-acceso_google [data-testid="stBaseButton-primary"] {
+  min-height: 3.2rem;
+  font-size: 1.02rem;
+}
+.mc-login-note {
+  margin-top: 0.7rem;
+  color: var(--ink-soft);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+}
+
+/* ---------- Descargas ---------- */
+/* Va al final: Streamlit las dibuja como botones secundarios y estas reglas
+   deben ganar a las de botones del chat y de la barra lateral. */
+
+.stDownloadButton [data-testid^="stBaseButton-"] {
+  border: 2px solid var(--ink);
+  background: var(--mustard);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+  font-weight: 600;
+}
+.stDownloadButton [data-testid^="stBaseButton-"]:hover {
+  border-color: var(--ink);
+  background: #F6C25C;
+  color: var(--ink);
+}
+.stDownloadButton [data-testid^="stBaseButton-"] p,
+.stDownloadButton [data-testid^="stBaseButton-"] span {
+  color: var(--ink);
+}
+[data-testid="stSidebar"] .stDownloadButton [data-testid^="stBaseButton-"] {
+  border-color: var(--pine-deep);
+  box-shadow: 3px 3px 0 var(--pine-deep);
+}
+
+/* ---------- Detalles ---------- */
+
+hr {
+  border-color: rgba(29, 26, 21, 0.18);
+}
+[data-testid="stSidebar"] hr {
+  border-color: #2F5A4E;
 }
 
 * {
-  scrollbar-color: rgba(22, 143, 200, 0.48) rgba(255, 255, 255, 0.32);
+  scrollbar-color: rgba(29, 26, 21, 0.35) transparent;
+}
+[data-testid="stSidebar"] * {
+  scrollbar-color: #3A6A5D transparent;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 720px) {
   [data-testid="stMainBlockContainer"] {
-    padding: 1.4rem 1rem 6rem;
+    padding: 1.5rem 1rem 7rem;
   }
-
-  h1 {
-    font-size: 1.8rem !important;
-    line-height: 1.2 !important;
+  .mc-features {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
-  [data-testid="stChatMessage"] {
-    border-radius: 15px !important;
-    padding: 0.8rem 0.9rem !important;
+  [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
+    margin-left: 0;
   }
-
-  [data-testid="stChatInput"] {
-    border-radius: 18px !important;
+  .mc-login {
+    margin-top: 1.5rem;
   }
 }
 
@@ -343,7 +639,6 @@ h1 {
   *,
   *::before,
   *::after {
-    scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
 }

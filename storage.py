@@ -60,12 +60,27 @@ def _leer_json(ruta, predeterminado):
         return predeterminado
 
 
-def guardar_conversaciones(conversaciones):
-    _guardar_json(CONVERSACIONES_PATH, conversaciones)
+def _usuario_base(usuario_id):
+    if usuario_id is None:
+        return DATA_DIR
+    if not isinstance(usuario_id, str) or not re.fullmatch(r"[A-Za-z0-9_-]+", usuario_id):
+        raise ValueError("Identificador de usuario inválido.")
+    return DATA_DIR / "usuarios" / usuario_id
 
 
-def cargar_conversaciones():
-    conversaciones = _leer_json(CONVERSACIONES_PATH, [])
+def _rutas_conversaciones(usuario_id=None):
+    base = _usuario_base(usuario_id)
+    return base / "conversaciones.json", base / "historial.json"
+
+
+def guardar_conversaciones(conversaciones, usuario_id=None):
+    ruta, _ = _rutas_conversaciones(usuario_id)
+    _guardar_json(ruta, conversaciones)
+
+
+def cargar_conversaciones(usuario_id=None):
+    conversaciones_path, historial_path = _rutas_conversaciones(usuario_id)
+    conversaciones = _leer_json(conversaciones_path, [])
     if isinstance(conversaciones, list):
         conversaciones = [
             conversacion for conversacion in conversaciones
@@ -78,23 +93,24 @@ def cargar_conversaciones():
         if conversaciones:
             return conversaciones
     conversacion = crear_conversacion()
-    historial = _leer_json(HISTORIAL_ANTERIOR_PATH, [])
+    historial = _leer_json(historial_path if usuario_id else HISTORIAL_ANTERIOR_PATH, [])
     if isinstance(historial, list) and historial:
         conversacion["titulo"] = "Conversación anterior"
         conversacion["mensajes"] = historial
     conversaciones = [conversacion]
-    guardar_conversaciones(conversaciones)
+    guardar_conversaciones(conversaciones, usuario_id)
     return conversaciones
 
 
-def _rutas_contexto(conversacion_id):
+def _rutas_contexto(conversacion_id, usuario_id=None):
     if not isinstance(conversacion_id, str) or not re.fullmatch(r"[A-Za-z0-9_-]+", conversacion_id):
         raise ValueError("Identificador de conversación inválido.")
-    return DATA_DIR / "contextos" / f"{conversacion_id}.json", DATA_DIR / "archivos" / conversacion_id
+    base = _usuario_base(usuario_id)
+    return base / "contextos" / f"{conversacion_id}.json", base / "archivos" / conversacion_id
 
 
-def guardar_contexto(conversacion_id, contexto):
-    ruta, carpeta = _rutas_contexto(conversacion_id)
+def guardar_contexto(conversacion_id, contexto, usuario_id=None):
+    ruta, carpeta = _rutas_contexto(conversacion_id, usuario_id)
     serializable = {clave: valor for clave, valor in contexto.items() if clave != "imagenes_activas"}
     imagenes = []
     for imagen in contexto.get("imagenes_activas", []):
@@ -114,8 +130,8 @@ def guardar_contexto(conversacion_id, contexto):
                 archivo.unlink(missing_ok=True)
 
 
-def cargar_contexto(conversacion_id):
-    ruta, carpeta = _rutas_contexto(conversacion_id)
+def cargar_contexto(conversacion_id, usuario_id=None):
+    ruta, carpeta = _rutas_contexto(conversacion_id, usuario_id)
     datos = _leer_json(ruta, {})
     if not isinstance(datos, dict) or not datos:
         return {}
@@ -145,8 +161,8 @@ def cargar_contexto(conversacion_id):
     return contexto
 
 
-def eliminar_contexto(conversacion_id):
-    ruta, carpeta = _rutas_contexto(conversacion_id)
+def eliminar_contexto(conversacion_id, usuario_id=None):
+    ruta, carpeta = _rutas_contexto(conversacion_id, usuario_id)
     ruta.unlink(missing_ok=True)
     if carpeta.exists():
         shutil.rmtree(carpeta)

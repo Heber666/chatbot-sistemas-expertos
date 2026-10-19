@@ -120,7 +120,7 @@ se reutilizan en v5; las funciones nuevas se integran al flujo del chat.
 | `archivos.py` | Lectores, transcripción de audio, lectura visual PDF, límites, errores y exportación DOCX/PDF/TXT. |
 | `busqueda.py` | Fragmentación por palabras y recuperación TF-IDF. |
 | `quiz.py` | Esquemas Pydantic, generación estructurada y calificación del quiz. |
-| `utils.py` / `styles.css` | Estilos compartidos; se conserva el diseño de las versiones anteriores. |
+| `utils.py` / `styles.css` | Inyección de estilos y tema «Cuaderno» (sombras, burbujas, portada); colores y fuentes en `.streamlit/config.toml`. |
 | `tests/test_v5.py` | Pruebas unitarias y Streamlit AppTest con almacenamiento temporal y OpenAI simulado. |
 
 ### Conversaciones y almacenamiento
@@ -235,7 +235,7 @@ pasos para crear `.env` están en `README.md`; no requieren privilegios de admin
 
 Al actualizar dependencias, detén Streamlit con `Ctrl+C`, ejecuta la instalación,
 `python -m pip check` y la suite de pruebas, y vuelve a iniciar la app. El tema
-raíz `config.toml` es de referencia: Streamlit carga el tema desde `.streamlit/config.toml`.
+se carga desde `.streamlit/config.toml`.
 
 ### Incidencias corregidas durante v5
 
