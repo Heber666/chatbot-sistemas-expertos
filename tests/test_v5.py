@@ -542,6 +542,32 @@ class TestInterfaz(DatosTemporales):
         self.assertFalse(app.chat_input)
         self.assertTrue(any(boton.label == "Continuar con Google" for boton in app.button))
 
+    def app_sin_env(self, secretos):
+        # Simula Streamlit Cloud: sin .env y con la clave solo en los Secrets.
+        with patch.dict(os.environ), patch("dotenv.load_dotenv"):
+            os.environ.pop("OPENAI_API_KEY", None)
+            app = self.nueva_app()
+            app.secrets.update(secretos)
+            return app.run()
+
+    def test_clave_en_secrets_de_streamlit_cloud(self):
+        app = self.app_sin_env({"OPENAI_API_KEY": "clave-desde-secrets"})
+        self.assertFalse(app.exception)
+        self.assertFalse(app.error)
+        self.assertTrue(app.chat_input)
+
+    def test_clave_dentro_de_auth_explica_como_corregirla(self):
+        app = self.app_sin_env({"auth": {"client_id": "x", "OPENAI_API_KEY": "clave-mal-ubicada"}})
+        self.assertFalse(app.exception)
+        self.assertFalse(app.chat_input)
+        self.assertIn("[auth]", app.error[0].value)
+        self.assertNotIn("clave-mal-ubicada", app.error[0].value)
+
+    def test_clave_ausente_pide_agregarla_en_secrets(self):
+        app = self.app_sin_env({"OTRA_COSA": "x"})
+        self.assertFalse(app.chat_input)
+        self.assertIn("no aparece en los Secrets", app.error[0].value)
+
     def test_sugerencia_envia_consulta_al_modelo(self):
         sugerencia = "Explícame la ley de Ohm con un ejemplo cotidiano"
         with patch("langchain_openai.ChatOpenAI") as modelo:

@@ -82,10 +82,43 @@ INSTRUCCIONES_NIVEL = {
 
 st.set_page_config(page_title="Master Chief · Tutor UNAB", page_icon=":material/school:")
 load_dotenv()
-API_KEY = os.getenv("OPENAI_API_KEY")
+
+
+def leer_configuracion(nombre, predeterminado=""):
+    """Lee un valor de .env/variables de entorno o, si falta, de los Secrets de Streamlit."""
+    valor = os.getenv(nombre)
+    if valor:
+        return valor.strip()
+    if st.secrets.load_if_toml_exists():
+        valor = st.secrets.get(nombre)
+        if isinstance(valor, (str, int, float)) and str(valor).strip():
+            return str(valor).strip()
+    return predeterminado
+
+
+def diagnosticar_configuracion_faltante(nombre):
+    if not st.secrets.load_if_toml_exists():
+        return (
+            f"No se encontró {nombre}. En tu equipo agrégala al archivo .env; "
+            "en Streamlit Cloud agrégala en Settings → Secrets y reinicia la app."
+        )
+    for seccion, valores in st.secrets.items():
+        if hasattr(valores, "keys") and nombre in valores:
+            return (
+                f"{nombre} está dentro de la sección [{seccion}] de los Secrets, por eso no se encuentra. "
+                f"Muévela arriba de la línea [{seccion}], guarda los Secrets y reinicia la app."
+            )
+    return (
+        f"{nombre} no aparece en los Secrets. Revisa que el nombre esté escrito exactamente así, "
+        "guarda los Secrets y reinicia la app desde el panel de Streamlit Cloud."
+    )
+
+
+API_KEY = leer_configuracion("OPENAI_API_KEY")
 if not API_KEY:
-    st.error("No se encontró OPENAI_API_KEY en el archivo .env. Agrégala y reinicia la aplicación.")
+    st.error(diagnosticar_configuracion_faltante("OPENAI_API_KEY"))
     st.stop()
+DOMINIO_PERMITIDO = leer_configuracion("ALLOWED_EMAIL_DOMAIN", "@unab.edu.sv").lower()
 cliente_openai = OpenAI(api_key=API_KEY)
 cargar_estilos("styles.css")
 
@@ -98,7 +131,7 @@ def autenticar_usuario():
     google_user = getattr(st, "user", None)
     if google_user and getattr(google_user, "is_logged_in", False):
         correo_google = str(getattr(google_user, "email", "")).lower()
-        configuracion = AuthSettings("", "", os.getenv("ALLOWED_EMAIL_DOMAIN", "@unab.edu.sv").lower())
+        configuracion = AuthSettings("", "", DOMINIO_PERMITIDO)
         try:
             correo_google = validar_correo(correo_google, configuracion)
         except AuthError:
@@ -126,7 +159,7 @@ def leer_claim(usuario_google, clave):
 
 
 def mostrar_portada():
-    dominio = escape(os.getenv("ALLOWED_EMAIL_DOMAIN", "@unab.edu.sv"))
+    dominio = escape(DOMINIO_PERMITIDO)
     st.markdown(
         '<section class="mc-login">'
         '<div class="mc-stickers"><span class="mc-sticker mc-sticker--mustard">UNAB</span>'
@@ -661,7 +694,7 @@ if prompt:
                 partes.extend(f"{mensaje['role']}: {contenido_para_modelo(mensaje)}" for mensaje in historial)
                 with st.spinner("Preparando archivo..."):
                     documento = generar_documento(
-                        cliente_openai, os.getenv("OPENAI_DOCUMENT_MODEL") or MODEL_NAME,
+                        cliente_openai, leer_configuracion("OPENAI_DOCUMENT_MODEL") or MODEL_NAME,
                         solicitud.instrucciones, "\n\n".join(material_generacion(partes)),
                     )
                     exportar_documento(documento, solicitud.formato)
