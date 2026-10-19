@@ -51,10 +51,11 @@ universitaria, datos por usuario y una interfaz nueva.
   cuando cabe en el presupuesto de contexto. En documentos extensos recupera
   fragmentos relevantes; si una petición general como "revisa este documento"
   no tiene coincidencias, utiliza una muestra en lugar de omitir el documento.
-- `chatbot_v5.py`: interfaz. `quiz.py`: esquema y validación del quiz.
-- En la barra lateral, **Quiz** permite elegir entre 3 y 10 preguntas sobre los
-  documentos de texto activos. Al enviar el formulario aparecen nota y
-  explicaciones. Sin documentos, **Generar quiz** está deshabilitado.
+- `chatbot_v6.py`: interfaz actual. `quiz.py`: esquema y validación del quiz.
+- En la barra lateral, **Quiz** permite elegir entre 3 y 10 preguntas basadas en
+  el historial del chat activo y en los documentos o transcripciones activos.
+  Al enviar el formulario aparecen nota y explicaciones. Sin contexto, **Generar
+  quiz** está deshabilitado.
 - La generación de documentos es una capacidad del chat, no un panel aparte.
   Puedes pedir **"Genera un PDF sobre el agua"**, **"Exporta ese resumen a Word"**
   o **"Guárdalo en un TXT"**. El modelo invoca una herramienta para redactar el

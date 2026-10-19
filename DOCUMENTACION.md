@@ -162,12 +162,14 @@ no permite recuperar un PDF ausente: la app avisa que se debe adjuntar de nuevo.
 
 ### Quiz
 
-Se genera desde la barra lateral con 3 a 10 preguntas sobre documentos activos.
+Se genera desde la barra lateral con 3 a 10 preguntas basadas en el historial
+del chat activo y en los documentos o transcripciones activos de esa conversación.
 Cada pregunta tiene cuatro opciones distintas, índice correcto de 0 a 3 y una
 explicación. Pydantic valida el esquema y la cantidad recibida; las preguntas se
 muestran con `st.form`. Al responder todas se calcula la nota sobre 100 y se
 muestran aciertos, respuestas correctas y explicaciones. La generación consume
-créditos; la calificación es local. Sin documentos, el botón está deshabilitado.
+créditos; la calificación es local. Sin mensajes ni material activo, el botón
+está deshabilitado.
 
 ### Documentos como capacidad del chat
 

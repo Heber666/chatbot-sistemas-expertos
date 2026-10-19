@@ -326,6 +326,22 @@ def contenido_para_modelo(mensaje):
     return contenido
 
 
+def obtener_material_quiz(contexto_archivos, mensajes):
+    material = list(contexto_archivos.get("documento_fragmentos", []))
+    transcripcion = contexto_archivos.get("audio_transcripciones", "")
+    if transcripcion.strip():
+        material.append("Transcripciones activas:\n" + transcripcion)
+    for mensaje in mensajes:
+        contenido = contenido_para_modelo(mensaje)
+        contenido = "\n".join(
+            linea for linea in contenido.splitlines() if not linea.strip().startswith("📎")
+        )
+        if contenido.strip():
+            rol = "Estudiante" if mensaje["role"] == "user" else "Tutor"
+            material.append(f"{rol}:\n{contenido}")
+    return material
+
+
 if "conversaciones" not in st.session_state:
     try:
         st.session_state.conversaciones = cargar_conversaciones(usuario_actual["id"])
@@ -347,6 +363,7 @@ conversacion_actual = next(
 st.session_state.chat_activo = conversacion_actual["id"]
 st.session_state.messages = conversacion_actual["mensajes"]
 contexto_archivos = obtener_contexto_archivos(conversacion_actual["id"])
+material_quiz = obtener_material_quiz(contexto_archivos, st.session_state.messages)
 
 with st.sidebar:
     inicial = escape(nombre_visible(usuario_actual)[:1].upper())
@@ -456,15 +473,15 @@ with st.sidebar:
     st.divider()
     with st.expander("Quiz", icon=":material/quiz:"):
         cantidad_preguntas = st.number_input("Número de preguntas", min_value=3, max_value=10, value=5, step=1)
-        tiene_documentos = bool(contexto_archivos.get("documento_fragmentos"))
-        if not tiene_documentos:
-            st.caption("No hay documentos activos en esta conversación.")
-        if st.button("Generar quiz", icon=":material/quiz:", disabled=not tiene_documentos, use_container_width=True):
+        tiene_contexto_quiz = any(fragmento.strip() for fragmento in material_quiz)
+        if not tiene_contexto_quiz:
+            st.caption("Aún no hay mensajes ni documentos o transcripciones para usar como contexto.")
+        if st.button("Generar quiz", icon=":material/quiz:", disabled=not tiene_contexto_quiz, use_container_width=True):
             try:
                 with st.spinner("Generando quiz..."):
                     resultado_quiz = generar_quiz(
                         cliente_openai, MODEL_NAME,
-                        material_generacion(contexto_archivos["documento_fragmentos"]),
+                        material_generacion(material_quiz),
                         int(cantidad_preguntas), nivel_academico,
                     )
                 st.session_state.quizzes[conversacion_actual["id"]] = {
@@ -716,3 +733,5 @@ if prompt:
                     mensaje_asistente["documento"] = adjunto_generado
                 st.session_state.messages.append(mensaje_asistente)
                 guardar_conversaciones()
+                if not any(fragmento.strip() for fragmento in material_quiz):
+                    st.rerun()

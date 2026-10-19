@@ -423,7 +423,7 @@ class TestInterfaz(DatosTemporales):
         cliente.chat.completions.create.return_value = SimpleNamespace(choices=[SimpleNamespace(
             finish_reason="stop", message=SimpleNamespace(content="CODIGO DE ETICA\nTrabaja con honestidad y respeta a tus companeros."),
         )])
-        with patch("streamlit.chat_input", side_effect=[entrada, None]), patch("openai.OpenAI", return_value=cliente), patch("langchain_openai.ChatOpenAI") as modelo:
+        with patch("streamlit.chat_input", side_effect=[entrada, None, None]), patch("openai.OpenAI", return_value=cliente), patch("langchain_openai.ChatOpenAI") as modelo:
             modelo.return_value.bind_tools.return_value = modelo.return_value
             modelo.return_value.stream.return_value = [AIMessageChunk(content="El codigo promueve honestidad y respeto.")]
             app = self.abrir()
@@ -516,6 +516,45 @@ class TestInterfaz(DatosTemporales):
         self.assertFalse(app.exception)
         self.boton(app, "Sin documento").click().run()
         self.assertEqual(len(app.radio), 0)
+
+    def test_quiz_usa_solo_el_historial_del_chat_activo(self):
+        self.chats[0]["mensajes"] = [{"role": "user", "content": "Contexto de otro chat que no debe mezclarse."}]
+        self.chats[1]["mensajes"] = [
+            {"role": "user", "content": "¿Cómo se calcula la derivada de Laplace?"},
+            {"role": "assistant", "content": "La transformada de Laplace convierte derivadas en expresiones algebraicas."},
+        ]
+        storage.guardar_conversaciones(self.chats)
+        app = self.nueva_app()
+        app.query_params["chat"] = self.chats[1]["id"]
+        app.run()
+        self.assertFalse(self.boton(app, "Generar quiz").disabled)
+
+        with patch("quiz.generar_quiz", return_value=quiz_ejemplo(5)) as generar:
+            self.boton(app, "Generar quiz").click().run()
+
+        material = "\n".join(generar.call_args.args[2])
+        self.assertIn("derivada de Laplace", material)
+        self.assertIn("transformada de Laplace", material)
+        self.assertNotIn("Contexto de otro chat", material)
+
+    def test_quiz_se_habilita_tras_la_primera_respuesta_sin_documentos(self):
+        app = self.abrir()
+        self.boton(app, "Sin documento").click().run()
+        self.assertTrue(self.boton(app, "Generar quiz").disabled)
+
+        with patch("langchain_openai.ChatOpenAI") as modelo:
+            modelo.return_value.bind_tools.return_value = modelo.return_value
+            modelo.return_value.stream.return_value = [
+                AIMessageChunk(content="La derivada de Laplace relaciona la función con su transformada.")
+            ]
+            app.chat_input[0].set_value("Explícame la derivada de Laplace.").run()
+
+        self.assertFalse(self.boton(app, "Generar quiz").disabled)
+        with patch("quiz.generar_quiz", return_value=quiz_ejemplo(5)) as generar:
+            self.boton(app, "Generar quiz").click().run()
+        material = "\n".join(generar.call_args.args[2])
+        self.assertIn("derivada de Laplace", material)
+        self.assertIn("relaciona la función con su transformada", material)
 
     def test_error_de_chat_no_se_guarda_como_respuesta(self):
         app = self.abrir()
