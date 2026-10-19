@@ -29,7 +29,7 @@ Comprueba que **no** aparezcan `.env`, `.streamlit/secrets.toml` ni
 3. Completa:
    - Repository: `Heber666/chatbot-sistemas-expertos`
    - Branch: `main`
-   - Main file path: `chatbot_v5.py`
+   - Main file path: `chatbot_v6.py`
    - App URL: elige un nombre, por ejemplo `master-chief-unab`.
      Tu enlace será `https://master-chief-unab.streamlit.app`.
 4. Abre **Advanced settings** y elige **Python 3.12** (la versión probada).
@@ -108,7 +108,7 @@ guardarlo en una base de datos externa, por ejemplo Supabase.
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
-python -m streamlit run chatbot_v5.py
+python -m streamlit run chatbot_v6.py
 ```
 
 En local, la clave de OpenAI se lee de `.env` y Google de

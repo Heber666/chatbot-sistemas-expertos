@@ -2,9 +2,9 @@
 
 Chatbot conversacional construido con **Streamlit**, **LangChain** y la **API de OpenAI**.
 
-> Versión final — acceso con Google institucional e interfaz «Cuaderno»
+> Versión 6.0 — acceso con Google institucional e interfaz «Cuaderno»
 
-La versión final utiliza Streamlit como interfaz única. Incluye acceso con
+La versión 6.0 utiliza Streamlit como interfaz única. Incluye acceso con
 Google institucional restringido a `@unab.edu.sv`, almacenamiento separado
 por usuario y una interfaz propia llamada «Cuaderno»: papel crema con
 retícula de puntos, tinta, rojo tomate, mostaza y una barra lateral verde
@@ -13,13 +13,29 @@ pizarra, con tipografías Fraunces, Bricolage Grotesque y JetBrains Mono.
 Consulta [`DEPLOYMENT.md`](./DEPLOYMENT.md) para configurar el acceso con
 Google, ejecutar la app y publicar el enlace en Streamlit Community Cloud.
 
-Documentación actualizada el 2026-10-18. Entrada principal: `chatbot_v5.py`.
+Documentación actualizada el 2026-10-18. Entrada principal: `chatbot_v6.py`.
 
 ## Descripción
 
-Aplicación de chat donde "Master Chief" responde con OpenAI. La versión 5
-conserva la interfaz y el flujo de la versión 4, y añade contexto persistente,
-quiz, documentos descargables y consultas por micrófono.
+Aplicación de chat donde "Master Chief" responde con OpenAI. La versión 6
+conserva todas las capacidades de la versión 5 (contexto persistente, quiz,
+documentos descargables y consultas por micrófono) y añade acceso con cuenta
+universitaria, datos por usuario y una interfaz nueva.
+
+## Novedades de la versión 6
+
+- **Acceso con Google:** la portada pide iniciar sesión con Google
+  (`st.login()`). Solo se admiten correos `@unab.edu.sv`.
+- **Datos por usuario:** cada cuenta tiene sus conversaciones, contexto e
+  imágenes en `data/usuarios/<id>/` (excluido de Git); nadie ve los chats de otro.
+- **Interfaz «Cuaderno»:** colores y fuentes en `.streamlit/config.toml` y
+  detalles visuales en `styles.css`. Incluye portada, saludo personalizado,
+  cuatro sugerencias que envían la consulta con un clic y un encabezado con el
+  modo, nivel y modelo elegidos.
+- **Configuración en la nube:** la clave de OpenAI y demás valores se leen de
+  `.env` o, si faltan, de los Secrets de Streamlit. Si falta la clave, el error
+  explica la causa sin mostrar su valor.
+- `chatbot_v5.py` se conserva sin cambios como referencia.
 
 ## Novedades de la versión 5
 
@@ -59,7 +75,7 @@ quiz, documentos descargables y consultas por micrófono.
   Eliminar una conversación borra también su contexto y sus imágenes.
   **Limpiar conversación** conserva los adjuntos, igual que en la versión 4.
 
-Los límites están al principio de `chatbot_v5.py`: 5 archivos por mensaje,
+Los límites están al principio de `chatbot_v6.py` (iguales en `chatbot_v5.py`): 5 archivos por mensaje,
 20 MB por archivo y 25 MB por audio. A los audios y grabaciones se les aplica
 el menor de los dos límites de tamaño (20 MB por defecto). Los archivos
 excedidos se avisan y omiten; se procesan los demás. En revisión de adjuntos y
@@ -160,6 +176,10 @@ se envía a OpenAI.
 |---|---|
 | `OPENAI_API_KEY` | Obligatoria. Clave del proyecto OpenAI; no se publica. |
 | `OPENAI_DOCUMENT_MODEL` | Opcional. Modelo de redacción de documentos, por ejemplo `gpt-4.1`; si no se configura, se usa el modelo del chat. |
+| `ALLOWED_EMAIL_DOMAIN` | Opcional. Dominio de correo admitido; por defecto `@unab.edu.sv`. |
+
+El inicio de sesión con Google se configura aparte, en `.streamlit/secrets.toml`
+(sección `[auth]`). Los pasos están en [`DEPLOYMENT.md`](./DEPLOYMENT.md).
 
 El modelo de chat y de lectura visual se selecciona en la barra lateral. La
 transcripción de audio usa `gpt-4o-mini-transcribe`.
@@ -169,10 +189,11 @@ transcripción de audio usa `gpt-4o-mini-transcribe`.
 Ejecuta la aplicación:
 
 ```bash
-python -m streamlit run chatbot_v5.py --server.address 127.0.0.1 --server.port 8501
+python -m streamlit run chatbot_v6.py
 ```
 
-Abre `http://127.0.0.1:8501`. El servidor solo escucha en el equipo local.
+Abre `http://localhost:8501` e inicia sesión con tu cuenta `@unab.edu.sv`.
+Usa `localhost` y no `127.0.0.1`: debe coincidir con el `redirect_uri` de Google.
 Desde la barra lateral puedes:
 
 - Elegir el modelo de OpenAI a usar (GPT-4o mini o GPT-4o).
@@ -185,24 +206,27 @@ Los documentos se adjuntan en la barra del chat. El micrófono está en esa mism
 barra. Para crear archivos, escribe la solicitud en el chat; no hay un panel
 independiente de generación de documentos.
 
-> Las versiones anteriores se conservan como referencia; `chatbot_v4.py` no
-> se modifica para implementar la versión 5.
+> Las versiones anteriores se conservan como referencia; `chatbot_v5.py` no
+> se modifica para implementar la versión 6.
 
 ## Pruebas locales
 
 ```bash
-python -m unittest discover -s tests -p test_v5.py -v
+python -m unittest discover -s tests -p test_v6.py -v
 ```
 
 Usan carpetas temporales y OpenAI simulado, sin consumir créditos. Cubren
 persistencia y recuperación en una nueva sesión, cambio de chat, eliminación,
-archivos corruptos, límites, lectores, errores, quiz, transcripción y descargas.
+archivos corruptos, límites, lectores, errores, quiz, transcripción y descargas,
+además del aislamiento de datos entre usuarios, la portada sin sesión, las
+sugerencias y la lectura de la clave desde los Secrets de Streamlit.
 La generación conversacional usa herramientas de OpenAI, no coincidencias
 de palabras; su decisión semántica requiere una comprobación con un modelo real.
 El permiso y la captura de un micrófono físico requieren una comprobación manual.
-La lectura visual de un PDF y las llamadas reales a OpenAI también necesitan
-una prueba manual con crédito disponible. La suite incluye 34 pruebas al
-2026-10-08, incluyendo PDF escaneado/mixto, límites y módulo antiguo en memoria.
+La lectura visual de un PDF, las llamadas reales a OpenAI y el inicio de sesión
+real con Google también necesitan una prueba manual. La suite de la v6 incluye
+40 pruebas al 2026-10-18; la suite original de la v5 (`-p test_v5.py`,
+34 pruebas) sigue pasando contra `chatbot_v5.py`.
 
 ## Mantenimiento
 
@@ -213,7 +237,7 @@ Antes de actualizar, guarda los cambios de código y detén Streamlit con
 ```bash
 python -m pip install --upgrade -r requirements.txt
 python -m pip check
-python -m unittest discover -s tests -p test_v5.py -v
+python -m unittest discover -s tests -p test_v6.py -v
 ```
 
 Reinicia la aplicación después de actualizar dependencias. No se ha certificado
@@ -245,12 +269,15 @@ ChatbotProject/
 ├── chatbot_v2.py      # Versión 2.0
 ├── chatbot_v3.py      # Versión 3.0 (conservada)
 ├── chatbot_v4.py      # Versión 4.0 (conservada)
-├── chatbot_v5.py      # Versión 5.0 (versión activa)
-├── storage.py         # Conversaciones y contexto persistente
+├── chatbot_v5.py      # Versión 5.0 (conservada)
+├── chatbot_v6.py      # Versión 6.0 (versión activa)
+├── auth.py            # Validación del dominio de correo
+├── storage.py         # Conversaciones y contexto persistente por usuario
 ├── archivos.py        # Lectura, transcripción y exportación
 ├── busqueda.py        # Fragmentación y búsqueda documental
 ├── quiz.py            # Quiz estructurado y validación
-├── tests/test_v5.py   # Pruebas locales aisladas
+├── tests/test_v6.py   # Pruebas locales aisladas de la v6
+├── tests/test_v5.py   # Pruebas originales de la v5 (conservadas)
 ├── utils.py           # Inyección de estilos
 ├── styles.css         # Tema «Cuaderno»: sombras, burbujas, portada y chips
 ├── .streamlit/config.toml  # Tema nativo: colores, fuentes y barra lateral
@@ -259,6 +286,9 @@ ChatbotProject/
 ├── .env.example        # Plantilla de variables de entorno
 ├── .gitignore
 ├── README.md
+├── DEPLOYMENT.md      # Publicación en Streamlit Community Cloud
+├── .devcontainer/     # Entorno de desarrollo creado por Streamlit Cloud
+├── supabase/          # Esquema para una futura versión con historial permanente
 └── DOCUMENTACION.md   # Bitácora del proceso de desarrollo
 ```
 
@@ -292,9 +322,11 @@ ChatbotProject/
 
 - [x] Selección de modelo desde la interfaz
 - [x] Límite configurable de historial reenviado al modelo
-- [x] Manejo de múltiples conversaciones locales (sin autenticación multiusuario)
+- [x] Manejo de múltiples conversaciones locales
 - [x] Streaming de la respuesta en tiempo real
-- [ ] Despliegue en Streamlit Community Cloud
+- [x] Inicio de sesión con Google `@unab.edu.sv` y datos separados por usuario (v6)
+- [x] Configuración para Streamlit Community Cloud (ver `DEPLOYMENT.md`)
+- [ ] Historial permanente en una base de datos externa
 
 ## Licencia
 

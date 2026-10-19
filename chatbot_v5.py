@@ -3,7 +3,6 @@
 import base64
 import inspect
 import os
-import re
 import uuid
 from html import escape
 from importlib import reload
@@ -15,9 +14,6 @@ from langchain_openai import ChatOpenAI
 from openai import OpenAI
 
 import archivos
-from auth import (
-    AuthError, AuthSettings, validar_correo,
-)
 
 if not {"modelo_vision", "max_paginas_ocr"}.issubset(inspect.signature(archivos.procesar_archivos_adjuntos).parameters):
     reload(archivos)
@@ -80,166 +76,19 @@ INSTRUCCIONES_NIVEL = {
     "🧠 Avanzado": "Profundiza en los conceptos y utiliza terminología técnica especializada cuando corresponda.",
 }
 
-st.set_page_config(page_title="Master Chief · Tutor UNAB", page_icon=":material/school:")
+st.set_page_config(page_title="Master Chief - Tutor Virtual", page_icon="🤖")
 load_dotenv()
-
-
-def leer_configuracion(nombre, predeterminado=""):
-    """Lee un valor de .env/variables de entorno o, si falta, de los Secrets de Streamlit."""
-    valor = os.getenv(nombre)
-    if valor:
-        return valor.strip()
-    if st.secrets.load_if_toml_exists():
-        valor = st.secrets.get(nombre)
-        if isinstance(valor, (str, int, float)) and str(valor).strip():
-            return str(valor).strip()
-    return predeterminado
-
-
-def diagnosticar_configuracion_faltante(nombre):
-    if not st.secrets.load_if_toml_exists():
-        return (
-            f"No se encontró {nombre}. En tu equipo agrégala al archivo .env; "
-            "en Streamlit Cloud agrégala en Settings → Secrets y reinicia la app."
-        )
-    for seccion, valores in st.secrets.items():
-        if hasattr(valores, "keys") and nombre in valores:
-            return (
-                f"{nombre} está dentro de la sección [{seccion}] de los Secrets, por eso no se encuentra. "
-                f"Muévela arriba de la línea [{seccion}], guarda los Secrets y reinicia la app."
-            )
-    return (
-        f"{nombre} no aparece en los Secrets. Revisa que el nombre esté escrito exactamente así, "
-        "guarda los Secrets y reinicia la app desde el panel de Streamlit Cloud."
-    )
-
-
-API_KEY = leer_configuracion("OPENAI_API_KEY")
+API_KEY = os.getenv("OPENAI_API_KEY")
 if not API_KEY:
-    st.error(diagnosticar_configuracion_faltante("OPENAI_API_KEY"))
+    st.error("No se encontró OPENAI_API_KEY en el archivo .env. Agrégala y reinicia la aplicación.")
     st.stop()
-DOMINIO_PERMITIDO = leer_configuracion("ALLOWED_EMAIL_DOMAIN", "@unab.edu.sv").lower()
 cliente_openai = OpenAI(api_key=API_KEY)
 cargar_estilos("styles.css")
 
 
-def autenticar_usuario():
-    usuario = st.session_state.get("usuario_autenticado")
-    if usuario:
-        return usuario
-
-    google_user = getattr(st, "user", None)
-    if google_user and getattr(google_user, "is_logged_in", False):
-        correo_google = str(getattr(google_user, "email", "")).lower()
-        configuracion = AuthSettings("", "", DOMINIO_PERMITIDO)
-        try:
-            correo_google = validar_correo(correo_google, configuracion)
-        except AuthError:
-            st.error("La cuenta de Google debe pertenecer al dominio @unab.edu.sv.")
-            if st.button("Cerrar sesión de Google"):
-                st.logout()
-            st.stop()
-        usuario = {
-            "id": str(getattr(google_user, "sub", correo_google)),
-            "email": correo_google,
-            "nombre": leer_claim(google_user, "given_name") or leer_claim(google_user, "name"),
-        }
-        st.session_state.usuario_autenticado = usuario
-        st.rerun()
-
-    mostrar_portada()
-    st.stop()
-
-
-def leer_claim(usuario_google, clave):
-    try:
-        return str(usuario_google[clave] or "").strip()
-    except (KeyError, AttributeError, TypeError):
-        return ""
-
-
-def mostrar_portada():
-    dominio = escape(DOMINIO_PERMITIDO)
-    st.markdown(
-        '<section class="mc-login">'
-        '<div class="mc-stickers"><span class="mc-sticker mc-sticker--mustard">UNAB</span>'
-        '<span class="mc-sticker mc-sticker--tomato">Tutor IA</span></div>'
-        '<h1 class="mc-login-title">Estudia con un tutor que <mark>no se cansa</mark><span class="mc-dot">.</span></h1>'
-        '<p class="mc-login-lead">Master Chief te explica paso a paso, lee tus apuntes y documentos, '
-        "te prepara quizzes y convierte tus resúmenes en archivos listos para entregar.</p>"
-        '<ul class="mc-features">'
-        "<li><b>Documentos</b><span>PDF, Word, Excel e imágenes</span></li>"
-        "<li><b>Voz</b><span>Pregunta con el micrófono</span></li>"
-        "<li><b>Quizzes</b><span>Practica con tu material</span></li>"
-        "<li><b>Exporta</b><span>PDF, Word o TXT</span></li>"
-        "</ul></section>",
-        unsafe_allow_html=True,
-    )
-    with st.container(key="acceso_google"):
-        if st.button("Continuar con Google", icon=":material/login:", type="primary", use_container_width=True):
-            st.login()
-    st.markdown(f'<p class="mc-login-note">Solo cuentas institucionales {dominio}</p>', unsafe_allow_html=True)
-
-
-def nombre_visible(usuario):
-    if usuario.get("nombre"):
-        return usuario["nombre"].split()[0]
-    local = usuario.get("email", "").split("@")[0]
-    primero = re.split(r"[._\-0-9]+", local)[0] if local else ""
-    return primero.capitalize() or "estudiante"
-
-
-def sin_emoji(etiqueta):
-    return etiqueta.split(" ", 1)[-1]
-
-
-def elegir_sugerencia(texto):
-    st.session_state.sugerencia = texto
-
-
-SUGERENCIAS = (
-    "Explícame la ley de Ohm con un ejemplo cotidiano",
-    "Hazme 3 preguntas para practicar derivadas",
-    "¿Cómo estructuro un ensayo argumentativo?",
-    "Resume las causas de la Primera Guerra Mundial",
-)
-
-
-def mostrar_bienvenida(usuario):
-    st.markdown(
-        '<section class="mc-hero">'
-        '<p class="mc-kicker">Nueva sesión de estudio</p>'
-        f'<h2 class="mc-hero-title">Hola, {escape(nombre_visible(usuario))}<span class="mc-dot">.</span><br>'
-        "¿Qué aprendemos <mark>hoy</mark>?</h2>"
-        '<p class="mc-hero-lead">Escribe una pregunta, adjunta un PDF, Word, Excel o imagen '
-        "con el clip, o usa el micrófono de la barra inferior.</p></section>"
-        '<p class="mc-section-label">Prueba con</p>',
-        unsafe_allow_html=True,
-    )
-    with st.container(key="sugerencias"):
-        columnas = st.columns(2)
-        for indice, texto in enumerate(SUGERENCIAS):
-            with columnas[indice % 2]:
-                st.button(
-                    texto, key=f"sugerencia_{indice}", use_container_width=True,
-                    on_click=elegir_sugerencia, args=(texto,),
-                )
-
-
-usuario_actual = autenticar_usuario()
-
-
-def cerrar_sesion():
-    for clave in ("usuario_autenticado",):
-        st.session_state.pop(clave, None)
-    if getattr(st, "user", None) and getattr(st.user, "is_logged_in", False):
-        st.logout()
-    st.rerun()
-
-
 def guardar_conversaciones():
     try:
-        persistir_conversaciones(st.session_state.conversaciones, usuario_actual["id"])
+        persistir_conversaciones(st.session_state.conversaciones)
         return True
     except OSError as error:
         st.error(mensaje_error(error))
@@ -249,13 +98,13 @@ def guardar_conversaciones():
 def obtener_contexto_archivos(conversacion_id):
     contextos = st.session_state.contextos_archivos_v5
     if conversacion_id not in contextos:
-        contextos[conversacion_id] = cargar_contexto(conversacion_id, usuario_actual["id"])
+        contextos[conversacion_id] = cargar_contexto(conversacion_id)
     return contextos[conversacion_id]
 
 
 def persistir_contexto(conversacion_id):
     try:
-        guardar_contexto(conversacion_id, obtener_contexto_archivos(conversacion_id), usuario_actual["id"])
+        guardar_contexto(conversacion_id, obtener_contexto_archivos(conversacion_id))
         return True
     except (OSError, ValueError) as error:
         st.error("El contexto sigue disponible en esta sesión, pero no se pudo guardar. " + mensaje_error(error))
@@ -268,7 +117,7 @@ def invalidar_herramientas(conversacion_id):
 
 def quitar_contexto(conversacion_id):
     try:
-        eliminar_contexto(conversacion_id, usuario_actual["id"])
+        eliminar_contexto(conversacion_id)
     except OSError as error:
         st.error(mensaje_error(error))
         return False
@@ -323,7 +172,7 @@ def contenido_para_modelo(mensaje):
 
 if "conversaciones" not in st.session_state:
     try:
-        st.session_state.conversaciones = cargar_conversaciones(usuario_actual["id"])
+        st.session_state.conversaciones = cargar_conversaciones()
     except OSError as error:
         st.error(mensaje_error(error))
         st.stop()
@@ -343,35 +192,23 @@ st.session_state.chat_activo = conversacion_actual["id"]
 st.session_state.messages = conversacion_actual["mensajes"]
 contexto_archivos = obtener_contexto_archivos(conversacion_actual["id"])
 
+st.title("Master Chief, tu tutor virtual")
+st.caption("Versión 5.0 — documentos, imágenes y audio")
+
 with st.sidebar:
-    inicial = escape(nombre_visible(usuario_actual)[:1].upper())
-    st.markdown(
-        '<div class="mc-side-brand"><span class="mc-brand-mark">MC</span>Master Chief</div>'
-        '<div class="mc-user">'
-        f'<span class="mc-user-avatar">{inicial}</span>'
-        '<span class="mc-user-text">'
-        f'<span class="mc-user-name">{escape(nombre_visible(usuario_actual))}</span>'
-        f'<span class="mc-user-email">{escape(usuario_actual["email"])}</span>'
-        "</span></div>",
-        unsafe_allow_html=True,
+    st.header("Chats")
+    consulta_chats = st.text_input(
+        "Buscar conversaciones", placeholder="Buscar por tema o palabra...", key="buscar_conversaciones"
     )
-    if st.button("Cerrar sesión", icon=":material/logout:", type="tertiary", key="cerrar_sesion"):
-        cerrar_sesion()
-    if st.button("Nueva conversación", icon=":material/add:", use_container_width=True, key="nueva_conversacion"):
+    if st.button("➕ Nueva conversación", use_container_width=True):
         nueva = crear_conversacion()
         st.session_state.conversaciones.insert(0, nueva)
         if guardar_conversaciones():
             activar_conversacion(nueva["id"])
             st.rerun()
-    st.markdown('<p class="mc-side-label">Conversaciones</p>', unsafe_allow_html=True)
-    consulta_chats = st.text_input(
-        "Buscar conversaciones", placeholder="Buscar por tema o palabra...",
-        key="buscar_conversaciones", label_visibility="collapsed",
-    )
 
     chats_visibles = buscar_conversaciones(st.session_state.conversaciones, consulta_chats)
-    if consulta_chats.strip():
-        st.caption(f"{len(chats_visibles)} resultados")
+    st.caption(f"{len(chats_visibles)} resultados")
     for conversacion in chats_visibles:
         with st.container(key=f"fila_chat_{conversacion['id']}"):
             columna_chat, columna_eliminar = st.columns([0.84, 0.16], gap="small")
@@ -407,7 +244,7 @@ with st.sidebar:
                 if not restantes:
                     restantes = [crear_conversacion()]
                 try:
-                        persistir_conversaciones(restantes, usuario_actual["id"])
+                    persistir_conversaciones(restantes)
                 except OSError as error:
                     st.error(mensaje_error(error))
                 else:
@@ -427,13 +264,13 @@ with st.sidebar:
                 st.rerun()
 
     st.divider()
-    st.markdown('<p class="mc-side-label">Ajustes de estudio</p>', unsafe_allow_html=True)
+    st.header("⚙️ Configuración")
     modo_aprendizaje = st.selectbox("Modo de aprendizaje", list(INSTRUCCIONES_MODO))
     nivel_academico = st.selectbox("Nivel académico", list(INSTRUCCIONES_NIVEL), index=2)
     modelo_visible = st.selectbox("Modelo de OpenAI", list(MODELOS_DISPONIBLES), index=0)
     MODEL_NAME = MODELOS_DISPONIBLES[modelo_visible]
     max_historial = st.slider("Mensajes de historial a recordar", min_value=2, max_value=30, value=10, step=2)
-    if st.button("Limpiar conversación", icon=":material/delete_sweep:", use_container_width=True):
+    if st.button("🗑️ Limpiar conversación", use_container_width=True):
         conversacion_actual["mensajes"] = []
         conversacion_actual["titulo"] = "Nueva conversación"
         if guardar_conversaciones():
@@ -444,7 +281,7 @@ with st.sidebar:
             for mensaje in st.session_state.messages
         )
         st.download_button(
-            "Descargar conversación", icon=":material/download:", data=texto_exportado,
+            "⬇️ Descargar conversación", data=texto_exportado,
             file_name="conversacion_master_chief.txt", mime="text/plain", use_container_width=True,
         )
 
@@ -469,24 +306,10 @@ with st.sidebar:
                 st.error(mensaje_error(error))
 
     st.divider()
-    st.markdown(
-        '<p class="mc-side-note">Master Chief es un asistente de IA con fines académicos. '
-        "Tus conversaciones se guardan por usuario. Las respuestas pueden contener errores.</p>",
-        unsafe_allow_html=True,
+    st.caption(
+        "Master Chief es un asistente de IA con fines académicos. "
+        "Las conversaciones se guardan localmente. Las respuestas pueden contener errores."
     )
-
-st.markdown(
-    '<div class="mc-topbar">'
-    '<span class="mc-brand"><span class="mc-brand-mark">MC</span>Master Chief</span>'
-    '<span class="mc-chips">'
-    f'<span class="mc-chip mc-chip--accent">{escape(sin_emoji(modo_aprendizaje))}</span>'
-    f'<span class="mc-chip">{escape(sin_emoji(nivel_academico))}</span>'
-    f'<span class="mc-chip">{escape(MODEL_NAME)}</span>'
-    "</span></div>",
-    unsafe_allow_html=True,
-)
-if st.session_state.messages:
-    st.markdown(f'<h1 class="mc-chat-title">{escape(conversacion_actual["titulo"])}</h1>', unsafe_allow_html=True)
 
 entrada = st.chat_input(
     "Escribe tu mensaje...", accept_file="multiple", accept_audio=True,
@@ -544,18 +367,11 @@ if entrada:
         )
         prompt = ""
 
-sugerencia = st.session_state.pop("sugerencia", None)
-if sugerencia and not entrada:
-    prompt = texto_entrada = sugerencia
-
 for numero_mensaje, mensaje in enumerate(st.session_state.messages):
     with st.chat_message(mensaje["role"]):
         st.markdown(mensaje["content"])
         if mensaje.get("documento"):
             mostrar_documento(mensaje["documento"], f"{conversacion_actual['id']}_{numero_mensaje}")
-
-if not st.session_state.messages and not prompt:
-    mostrar_bienvenida(usuario_actual)
 
 nombres_archivos_activos = (
     contexto_archivos.get("documento_nombres", []) + contexto_archivos.get("audio_nombres", [])
@@ -694,7 +510,7 @@ if prompt:
                 partes.extend(f"{mensaje['role']}: {contenido_para_modelo(mensaje)}" for mensaje in historial)
                 with st.spinner("Preparando archivo..."):
                     documento = generar_documento(
-                        cliente_openai, leer_configuracion("OPENAI_DOCUMENT_MODEL") or MODEL_NAME,
+                        cliente_openai, os.getenv("OPENAI_DOCUMENT_MODEL") or MODEL_NAME,
                         solicitud.instrucciones, "\n\n".join(material_generacion(partes)),
                     )
                     exportar_documento(documento, solicitud.formato)

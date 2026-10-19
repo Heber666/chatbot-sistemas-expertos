@@ -6,8 +6,8 @@ Chatbot conversacional construido con **Streamlit**, **LangChain** y la **API de
 desarrollado como práctica de clase. La versión actual permite conversar con historial
 local persistente, analizar adjuntos, generar documentos y quizzes y consultar por voz.
 
-- **Versión actual:** 5.0, entrada `chatbot_v5.py` (ver sección 10).
-- **Última actualización:** 2026-10-08.
+- **Versión actual:** 6.0, entrada `chatbot_v6.py` (ver sección 11).
+- **Última actualización:** 2026-10-18.
 - **Stack:** Python, Streamlit, LangChain (`langchain-openai`), OpenAI API
 - **Repositorio:** subido a GitHub como proyecto público/privado del curso
 
@@ -31,7 +31,7 @@ Pasos seguidos para levantar el proyecto localmente:
 2. Activación del entorno (`venv\Scripts\activate` en Windows / `source venv/bin/activate`
    en Mac/Linux).
 3. Instalación desde `requirements.txt` con `python -m pip install -r requirements.txt`.
-   Además de Streamlit/LangChain incluye lectores, exportación y pruebas (ver sección 11).
+   Además de Streamlit/LangChain incluye lectores, exportación y pruebas (ver sección 12).
 4. Generación de una **API key propia** en [platform.openai.com](https://platform.openai.com/api-keys),
    con una compra de crédito mínima de $5 USD, más que suficiente para el uso de la práctica.
 5. Configuración de la clave en un archivo `.env` local (nunca en el código ni en el
@@ -209,10 +209,50 @@ de error distinguen saldo/cuota, límite temporal de solicitudes, clave inválid
 modelo no disponible/permisos, conexión, formato, almacenamiento y otros fallos.
 Los errores de la API no se guardan como respuestas del asistente.
 
-## 11. Instalación, configuración y mantenimiento actuales
+## 11. Versión 6.0: acceso universitario, datos por usuario e interfaz «Cuaderno»
+
+La versión 6.0 (`chatbot_v6.py`) conserva todas las capacidades de la 5.0 y la
+prepara para publicarse con un enlace público. `chatbot_v5.py` se conserva sin
+cambios como referencia.
+
+### Cambios principales
+
+| Área | Cambio |
+|---|---|
+| Acceso | Inicio de sesión con Google mediante `st.login()` (OIDC de Streamlit). Solo se admiten correos `@unab.edu.sv`; otra cuenta se rechaza con opción de cerrar sesión. |
+| Datos por usuario | `storage.py` acepta un `usuario_id` opcional y guarda conversaciones, contexto e imágenes en `data/usuarios/<id>/`. Un usuario no ve los datos de otro. Sin `usuario_id` conserva las rutas de la v5. |
+| Interfaz | Tema «Cuaderno»: colores y fuentes en `.streamlit/config.toml` (papel, tinta, tomate, mostaza y barra lateral verde pizarra; Fraunces, Bricolage Grotesque y JetBrains Mono) y `styles.css` reescrito (sombras sólidas, burbujas, portada). |
+| Inicio | Portada de acceso, saludo personalizado y cuatro sugerencias que envían la consulta con un clic. El encabezado muestra modo, nivel y modelo. |
+| Configuración | `leer_configuracion()` busca cada valor en `.env`/variables de entorno y, si falta, en los Secrets de Streamlit. Si falta la clave, el error indica la causa sin mostrar su valor. |
+| Publicación | `DEPLOYMENT.md` documenta la publicación en Streamlit Community Cloud. |
+
+`auth.py` contiene la validación del dominio. La carpeta `supabase/` guarda un
+esquema para una futura versión con historial permanente; la 6.0 no lo usa.
+
+### Decisiones durante el desarrollo
+
+Se evaluó migrar a Next.js, FastAPI y Supabase, y un segundo factor por código
+enviado al correo. Se descartó para mantener Streamlit como interfaz única: el
+correo OTP de Supabase exigía un SMTP propio para cambiar el enlace mágico por un
+código, y no se disponía de uno. El acceso quedó solo con Google institucional; la
+verificación en dos pasos depende de la configuración de cada cuenta de Google.
+
+### Incidencias corregidas durante v6
+
+| Incidencia | Causa y corrección |
+|---|---|
+| El correo enviaba un enlace mágico en vez de un código | Supabase solo permite editar la plantilla con SMTP propio. Se retiró el acceso por correo. |
+| `StreamlitMissingAuthlibError` | `st.login` requiere Authlib. `requirements.txt` usa `streamlit[auth]`. |
+| `StreamlitAuthError` para el proveedor `"google"` | `st.login("google")` busca `[auth.google]`; los secretos están directamente en `[auth]`. Se usa `st.login()`. |
+| `OPENAI_API_KEY` no encontrada en Streamlit Cloud | No existe `.env` en la nube. Se lee también desde `st.secrets` y el error explica si la clave falta o quedó dentro de `[auth]`. |
+| Conversaciones privadas sin excluir de Git | `data/usuarios/` no estaba en `.gitignore`; se agregó. |
+| Pruebas detenidas en la portada | AppTest no tenía sesión iniciada. Las pruebas simulan un usuario autenticado. |
+
+## 12. Instalación, configuración y mantenimiento actuales
 
 - Python 3.10+; entorno verificado: Python 3.12.5 en Windows.
-- Streamlit 1.63.0+ es necesario para audio dentro del chat.
+- Streamlit 1.63.0+ es necesario para audio dentro del chat. Se instala como
+   `streamlit[auth]` para incluir Authlib, requerido por el inicio de sesión.
 - `langchain-openai`, `langchain-core`, `openai` y `pydantic` soportan mensajes,
    herramientas y respuestas estructuradas. `python-dotenv` carga configuración.
 - `pypdf`, `python-docx`, `openpyxl` y `reportlab` leen y exportan documentos;
@@ -222,16 +262,23 @@ Los errores de la API no se guardan como respuestas del asistente.
    todas las combinaciones de versiones o plataformas no está certificada.
 - `OPENAI_API_KEY` es obligatoria. `OPENAI_DOCUMENT_MODEL` es opcional; permite
    separar el modelo de redacción del seleccionado en el chat.
+   `ALLOWED_EMAIL_DOMAIN` es opcional y vale `@unab.edu.sv` por defecto.
+- El inicio de sesión con Google usa `.streamlit/secrets.toml` con una sección
+   `[auth]` (`redirect_uri`, `cookie_secret`, `client_id`, `client_secret` y
+   `server_metadata_url`). En la nube, todos estos valores van en los Secrets de
+   Streamlit; las claves de nivel raíz deben ir antes de `[auth]`.
 
 Instalación dentro del entorno virtual y arranque local:
 
 ```bash
 python -m pip install -r requirements.txt
-python -m streamlit run chatbot_v5.py --server.address 127.0.0.1 --server.port 8501
+python -m streamlit run chatbot_v6.py
 ```
 
-Dirección recomendada: `http://127.0.0.1:8501`. La activación de PowerShell y los
-pasos para crear `.env` están en `README.md`; no requieren privilegios de administrador.
+Abre `http://localhost:8501`: debe coincidir con el host de `redirect_uri`
+(`http://localhost:8501/oauth2callback`), o Google rechazará el acceso. La
+activación de PowerShell y los pasos para crear `.env` están en `README.md`; no
+requieren privilegios de administrador. La publicación está en `DEPLOYMENT.md`.
 
 Al actualizar dependencias, detén Streamlit con `Ctrl+C`, ejecuta la instalación,
 `python -m pip check` y la suite de pruebas, y vuelve a iniciar la app. El tema
@@ -247,31 +294,38 @@ se carga desde `.streamlit/config.toml`.
 | `unexpected keyword argument 'modelo_vision'` | Un módulo en memoria podía conservar la firma anterior; se comprueba y recarga antes de importar las funciones. |
 | `localhost` abría otra instancia | Dos servidores podían usar el mismo puerto en IPv4 e IPv6. Se recomienda una sola instancia y dirección IPv4 explícita. |
 
-## 12. Validación y privacidad
+## 13. Validación y privacidad
 
 ```bash
-python -m unittest discover -s tests -p test_v5.py -v
+python -m unittest discover -s tests -p test_v6.py -v
 ```
 
-La suite tiene 34 pruebas al 2026-10-08. Usa carpetas temporales y respuestas
-OpenAI simuladas; no modifica historiales personales ni consume créditos. Incluye
-persistencia, datos corruptos, límites, PDF escaneado/mixto, fallos visuales,
-streaming de herramientas, recuperación de descargas, quiz, audio y recarga de
-una función antigua en memoria. No acredita exactitud del OCR, decisiones del
-modelo real, disponibilidad de la cuenta ni funcionamiento de un micrófono físico:
-estos aspectos requieren pruebas manuales con el dispositivo y crédito disponible.
+La suite de la v6 tiene 40 pruebas al 2026-10-18. Usa carpetas temporales y
+respuestas OpenAI simuladas; no modifica historiales personales ni consume
+créditos. Además de lo cubierto en la v5 (persistencia, datos corruptos, límites,
+PDF escaneado/mixto, fallos visuales, streaming de herramientas, recuperación de
+descargas, quiz, audio y recarga de una función antigua en memoria), verifica el
+aislamiento de datos entre usuarios, la portada sin sesión, las sugerencias y la
+lectura de la clave desde los Secrets. La suite original de la v5
+(`-p test_v5.py`, 34 pruebas) sigue pasando contra `chatbot_v5.py`. No acredita
+exactitud del OCR, decisiones del modelo real, el inicio de sesión real con
+Google, disponibilidad de la cuenta ni funcionamiento de un micrófono físico:
+estos aspectos requieren pruebas manuales.
 
 Los contextos y conversaciones locales no están cifrados y pueden contener datos
 personales. Se excluyen de Git `.env`, secretos de Streamlit, entornos virtuales,
-historiales, contextos e imágenes. `.gitignore` no elimina datos ya rastreados o
-publicados: revisa el diff antes de hacer commit. El texto, imágenes, PDF de lectura
-visual y audio utilizados se envían a OpenAI. La app no incorpora autenticación ni
-aislamiento multiusuario y no debe exponerse públicamente para información privada.
+historiales, contextos, imágenes y `data/usuarios/`. `.gitignore` no elimina datos
+ya rastreados o publicados: revisa el diff antes de hacer commit. El texto,
+imágenes, PDF de lectura visual y audio utilizados se envían a OpenAI. La v6 exige
+una cuenta Google `@unab.edu.sv` y separa los datos por usuario; aun así, el
+servidor que la aloja puede leer todas las carpetas. En Streamlit Community Cloud
+los archivos no son permanentes: las conversaciones se pierden al reiniciarse la app.
 
-## 13. Posibles próximos pasos
+## 14. Posibles próximos pasos
 
-- Autenticación y separación de datos por usuario.
+- Historial permanente en una base de datos externa (por ejemplo, Supabase) para
+  que las conversaciones sobrevivan a los reinicios de Streamlit Cloud.
+- Segundo factor propio de la app, si se dispone de un SMTP institucional.
 - Pruebas de instalación en un entorno limpio y bloqueo reproducible de versiones.
 - Pruebas reales controladas de lectura visual y calidad de transcripción.
-- Mejoras de seguimiento de costes y límites por conversación.
-- Despliegue con HTTPS y gestión de secretos de la plataforma.
+- Mejoras de seguimiento de costes y límites por usuario.

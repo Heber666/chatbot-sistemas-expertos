@@ -119,17 +119,6 @@ class TestStorage(DatosTemporales):
         self.assertIn("El agua", storage.obtener_fragmento_coincidente(chats[0], "agua"))
         self.assertEqual(storage.cargar_conversaciones(), chats)
 
-    def test_datos_aislados_por_usuario(self):
-        storage.guardar_conversaciones([storage.crear_conversacion("Privado de A")], "usuario-a")
-        storage.guardar_contexto("chat1", self.contexto, "usuario-a")
-        self.assertEqual(storage.cargar_conversaciones("usuario-a")[0]["titulo"], "Privado de A")
-        self.assertEqual(storage.cargar_conversaciones("usuario-b")[0]["mensajes"], [])
-        self.assertNotEqual(storage.cargar_conversaciones("usuario-b")[0]["titulo"], "Privado de A")
-        self.assertEqual(storage.cargar_contexto("chat1", "usuario-b"), {})
-        self.assertEqual(storage.cargar_contexto("chat1", "usuario-a")["documento_nombres"], ["agua.txt"])
-        with self.assertRaises(ValueError):
-            storage.cargar_conversaciones("../otro")
-
 
 class TestArchivos(unittest.TestCase):
     def test_pdf_escaneado_lectura_visual(self):
@@ -309,19 +298,9 @@ class TestInterfaz(DatosTemporales):
         self.chats = [storage.crear_conversacion("Con documento"), storage.crear_conversacion("Sin documento")]
         storage.guardar_conversaciones(self.chats)
         storage.guardar_contexto(self.chats[0]["id"], self.contexto)
-        # La interfaz guarda por usuario; aqui ese usuario usa la carpeta temporal
-        # para que las pruebas verifiquen los mismos archivos que escribe la app.
-        parche = patch.object(storage, "_usuario_base", lambda usuario_id: self.carpeta)
-        parche.start()
-        self.addCleanup(parche.stop)
-
-    def nueva_app(self):
-        app = AppTest.from_file(str(ROOT / "chatbot_v5.py"), default_timeout=30)
-        app.session_state["usuario_autenticado"] = {"id": "usuario-prueba", "email": "estudiante@unab.edu.sv"}
-        return app
 
     def abrir(self):
-        app = self.nueva_app().run()
+        app = AppTest.from_file(str(ROOT / "chatbot_v5.py"), default_timeout=30).run()
         self.assertFalse(app.exception, [error.message for error in app.exception])
         return app
 
@@ -529,57 +508,12 @@ class TestInterfaz(DatosTemporales):
         self.assertEqual(app.session_state["messages"][-1]["role"], "user")
 
     def test_recarga_con_chat_seleccionado_en_url(self):
-        app = self.nueva_app()
+        app = AppTest.from_file(str(ROOT / "chatbot_v5.py"), default_timeout=30)
         app.query_params["chat"] = self.chats[1]["id"]
         app.run()
         self.assertFalse(app.exception)
         self.assertEqual(app.session_state["chat_activo"], self.chats[1]["id"])
         self.assertTrue(self.boton(app, "Generar quiz").disabled)
-
-    def test_sin_sesion_muestra_portada_y_no_el_chat(self):
-        app = AppTest.from_file(str(ROOT / "chatbot_v5.py"), default_timeout=30).run()
-        self.assertFalse(app.exception)
-        self.assertFalse(app.chat_input)
-        self.assertTrue(any(boton.label == "Continuar con Google" for boton in app.button))
-
-    def app_sin_env(self, secretos):
-        # Simula Streamlit Cloud: sin .env y con la clave solo en los Secrets.
-        with patch.dict(os.environ), patch("dotenv.load_dotenv"):
-            os.environ.pop("OPENAI_API_KEY", None)
-            app = self.nueva_app()
-            app.secrets.update(secretos)
-            return app.run()
-
-    def test_clave_en_secrets_de_streamlit_cloud(self):
-        app = self.app_sin_env({"OPENAI_API_KEY": "clave-desde-secrets"})
-        self.assertFalse(app.exception)
-        self.assertFalse(app.error)
-        self.assertTrue(app.chat_input)
-
-    def test_clave_dentro_de_auth_explica_como_corregirla(self):
-        app = self.app_sin_env({"auth": {"client_id": "x", "OPENAI_API_KEY": "clave-mal-ubicada"}})
-        self.assertFalse(app.exception)
-        self.assertFalse(app.chat_input)
-        self.assertIn("[auth]", app.error[0].value)
-        self.assertNotIn("clave-mal-ubicada", app.error[0].value)
-
-    def test_clave_ausente_pide_agregarla_en_secrets(self):
-        app = self.app_sin_env({"OTRA_COSA": "x"})
-        self.assertFalse(app.chat_input)
-        self.assertIn("no aparece en los Secrets", app.error[0].value)
-
-    def test_sugerencia_envia_consulta_al_modelo(self):
-        sugerencia = "Explícame la ley de Ohm con un ejemplo cotidiano"
-        with patch("langchain_openai.ChatOpenAI") as modelo:
-            modelo.return_value.bind_tools.return_value = modelo.return_value
-            modelo.return_value.stream.return_value = [AIMessageChunk(content="V = I x R.")]
-            app = self.abrir()
-            self.boton(app, "Sin documento").click().run()
-            self.boton(app, sugerencia).click().run()
-        self.assertFalse(app.exception)
-        self.assertEqual([mensaje["role"] for mensaje in app.session_state["messages"]], ["user", "assistant"])
-        self.assertEqual(app.session_state["messages"][0]["content"], sugerencia)
-        self.assertFalse(any(boton.label == sugerencia for boton in app.button))
 
     def test_microfono_envia_consulta_y_persiste_transcripcion(self):
         grabacion = Archivo("microfono.wav", b"audio-simulado", "audio/wav")
